@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Крафт-мастер</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #2d3748;
+            --container-bg: #ffffff;
+            --shadow-color: rgba(0,0,0,0.15);
+            --hover-bg: #e2e8f0;
+            --slot-bg: #edf2f7;
+            --crafting-slot-bg: #f7fafc;
+            --button-bg: #3182ce;
+            --button-hover-bg: #2b6cb0;
+            --upgrade-btn-bg: #38a169;
+            --xp-bar-bg: #f6e05e;
+            --progress-bar-bg: #3182ce;
+            --tooltip-bg: rgba(45,55,72,0.9);
+            --recipe-bg: #f7fafc;
+            --accent-color: #e53e3e;
+        }
+        .dark-theme {
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --container-bg: #2d3748;
+            --shadow-color: rgba(0,0,0,0.4);
+            --hover-bg: #4a5568;
+            --slot-bg: #4a5568;
+            --crafting-slot-bg: #718096;
+            --button-bg: #63b3ed;
+            --button-hover-bg: #4299e1;
+            --upgrade-btn-bg: #48bb78;
+            --xp-bar-bg: #ecc94b;
+            --progress-bar-bg: #63b3ed;
+            --tooltip-bg: rgba(26,32,44,0.95);
+            --recipe-bg: #2d3748;
+            --accent-color: #f56565;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: var(--bg-color); color: var(--text-color); padding: 20px; max-width: 1000px; margin: 0 auto; transition: background 0.3s, color 0.3s; }
+        h1, h2 { text-align: center; margin: 15px 0; color: var(--text-color); font-weight: 600; }
+        .player-stats { background: var(--container-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px var(--shadow-color); margin-bottom: 20px; }
+        .player-stats-header { display: flex; justify-content: space-between; align-items: center; }
+        .player-level-container { font-size: 20px; font-weight: 500; }
+        .xp-bar-container { flex: 1; height: 12px; background: var(--slot-bg); border-radius: 6px; overflow: hidden; margin-left: 15px; }
+        #xp-bar { height: 100%; width: 0; background: var(--xp-bar-bg); transition: width 0.5s ease; }
+        #player-bonuses { font-size: 14px; color: #38a169; margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+        .status-message { text-align: center; margin: 15px 0; font-weight: 600; color: var(--accent-color); min-height: 24px; }
+        .resource-mining, .resources-container, .inventory-container, .crafting-container, .save-container { background: var(--container-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px var(--shadow-color); margin-bottom: 20px; }
+        .mining-areas, .resources-grid, .inventory-grid, .crafting-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 15px; }
+        .mining-area, .resource-item, .inventory-item, .crafting-slot { background: var(--slot-bg); border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; position: relative; user-select: none; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+        .mining-area { height: 180px; }
+        .crafting-slot { background: var(--crafting-slot-bg); height: 90px; }
+        .mining-area:hover, .resource-item:hover, .inventory-item:hover, .crafting-slot:hover { background: var(--hover-bg); transform: translateY(-3px); box-shadow: 0 2px 8px var(--shadow-color); }
+        .level-badge { position: absolute; top: 8px; right: 8px; background: var(--button-bg); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none; }
+        .mining-icon, .icon { font-size: 32px; margin-bottom: 8px; pointer-events: none; }
+        .item-count { position: absolute; bottom: 5px; right: 5px; background: var(--tooltip-bg); color: #fff; border-radius: 12px; padding: 3px 8px; font-size: 12px; }
+        .item-name, .mining-name { font-size: 15px; overflow: hidden; text-overflow: ellipsis; max-width: 100%; pointer-events: none; }
+        .mining-progress { height: 12px; width: 100%; background: var(--slot-bg); border-radius: 6px; margin-top: 8px; overflow: hidden; }
+        .mining-progress-bar { height: 100%; width: 0; background: var(--progress-bar-bg); transition: width 0.5s ease; }
+        .upgrade-btn { font-size: 13px; padding: 6px 12px; background: var(--upgrade-btn-bg); border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        .upgrade-btn:hover { background: #2f855a; }
+        .cooldown-text { font-size: 13px; color: var(--accent-color); margin-top: 8px; }
+        .tooltip-mining { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--tooltip-bg); color: #fff; padding: 6px 12px; border-radius: 6px; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; font-size: 13px; pointer-events: none; }
+        .mining-area:hover .tooltip-mining { opacity: 1; }
+        button { background: var(--button-bg); color: #fff; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; transition: background 0.2s ease, transform 0.1s; font-weight: 500; }
+        button:hover { background: var(--button-hover-bg); transform: translateY(-2px); }
+        button:disabled { background: #a0aec0; cursor: not-allowed; }
+        .recipe-book { margin-top: 15px; padding: 15px; background: var(--recipe-bg); border-radius: 8px; border: 1px solid #e2e8f0; }
+        .recipe-list { list-style: none; padding-left: 20px; font-size: 14px; }
+        .save-buttons { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        input[type="file"] { display: none; }
+        .settings-button { position: fixed; top: 20px; left: 20px; background: var(--button-bg); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px var(--shadow-color); transition: all 0.2s ease; }
+        .settings-button:hover { background: var(--button-hover-bg); transform: scale(1.1); }
+        .settings-button svg { width: 24px; height: 24px; fill: #fff; }
+        .settings-panel { position: fixed; top: 0; right: -300px; width: 300px; height: 100%; background: var(--container-bg); box-shadow: -4px 0 12px var(--shadow-color); padding: 20px; transition: right 0.3s ease; z-index: 1000; }
+        .settings-panel.open { right: 0; }
+        .settings-panel h2 { font-size: 20px; margin-bottom: 20px; }
+        .settings-panel .close-button { position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; }
+        .settings-panel .close-button svg { width: 20px; height: 20px; fill: var(--text-color); }
+        .theme-toggle { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .theme-toggle label { font-size: 16px; font-weight: 500; }
+        .theme-toggle input { width: 20px; height: 20px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <button class="settings-button" id="settings-button">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.44.17-.48.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.3-.06.64-.06.94s.02.64.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.24.41.48.41h3.84c.24 0 .44-.17-.48.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.08-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+    </button>
+    <div class="settings-panel" id="settings-panel">
+        <button class="close-button" id="close-settings">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+        <h2>Настройки</h2>
+        <div class="theme-toggle">
+            <label for="theme-toggle">Тёмная тема</label>
+            <input type="checkbox" id="theme-toggle">
+        </div>
+    </div>
+    <h1>САЙТ ОБНОВЛЯЕТЬСЯ. СЛЕДИТЕ ЗА ОБНОВЛЕНИЯМИ.</h1>
+    <h2>ДЕЛЬТА НЕ СПИТ.</h2>
+    <h2>ТЕХНОЛОГИИ ПРОЦВЕТАЮТ.</h2>
+    <h2>СЛАВА ПРОГРЕССУ.</h2>
+    <h1>Крафт-мастер</h1>
+    <div class="player-stats">
+        <div class="player-stats-header">
+            <div class="player-level-container">Уровень: <span id="player-level">1</span></div>
+            <div class="xp-bar-container"><div id="xp-bar" style="width: 0%;"></div></div>
+        </div>
+        <div id="player-bonuses"></div>
+    </div>
+    <p class="status-message" id="status-message"></p>
+    <div class="save-container">
+        <h2>Сохранение</h2>
+        <div class="save-buttons">
+            <button id="export-button">Экспорт (.cfmdat)</button>
+            <button id="import-button">Импорт (.cfmdat)</button>
+        </div>
+        <input type="file" id="import-file" accept=".cfmdat">
+    </div>
+    <div class="resource-mining">
+        <h2 class="mining-title">Добыча ресурсов</h2>
+        <div class="mining-areas" id="mining-areas">
+            <div class="mining-area">
+                <div class="tooltip-mining">Цена: 1 axe, 5 wood</div>
+                <div class="level-badge">1</div>
+                <div class="mining-icon">🌲</div>
+                <div class="mining-name">Лес</div>
+                <div class="mining-progress"><div class="mining-progress-bar" style="width:0%"></div></div>
+                <div class="cooldown-text"></div>
+                <button class="upgrade-btn" data-id="forest">Улучшить</button>
+            </div>
+            <div class="mining-area">
+                <div class="tooltip-mining">Цена: 1 pickaxe, 5 stone</div>
+                <div class="level-badge">1</div>
+                <div class="mining-icon">⛰️</div>
+                <div class="mining-name">Горы</div>
+                <div class="mining-progress"><div class="mining-progress-bar" style="width:0%"></div></div>
+                <div class="cooldown-text"></div>
+                <button class="upgrade-btn" data-id="mountain">Улучшить</button>
+            </div>
+            <div class="mining-area">
+                <div class="tooltip-mining">Цена: 1 pickaxe, 5 iron</div>
+                <div class="level-badge">1</div>
+                <div class="mining-icon">🕳️</div>
+                <div class="mining-name">Пещера</div>
+                <div class="mining-progress"><div class="mining-progress-bar" style="width:0%"></div></div>
+                <div class="cooldown-text"></div>
+                <button class="upgrade-btn" data-id="cave">Улучшить</button>
+            </div>
+            <div class="mining-area">
+                <div class="tooltip-mining">Цена: 1 shovel, 5 wool</div>
+                <div class="level-badge">1</div>
+                <div class="mining-icon">🌄</div>
+                <div class="mining-name">Равнины</div>
+                <div class="mining-progress"><div class="mining-progress-bar" style="width:0%"></div></div>
+                <div class="cooldown-text"></div>
+                <button class="upgrade-btn" data-id="plains">Улучшить</button>
+            </div>
+        </div>
+    </div>
+    <div class="game-container">
+        <div class="inventory-container">
+            <h2>Инвентарь</h2>
+            <div class="inventory-grid" id="inventory"></div>
+        </div>
+        <div class="resources-container">
+            <h2>Ресурсы</h2>
+            <div class="resources-grid" id="resources">
+           
+            </div>
+        </div>
+        <div class="crafting-container">
+            <h2>Крафт</h2>
+            <div class="crafting-grid" id="crafting-grid">
+                <div class="crafting-slot" data-slot="0"></div>
+                <div class="crafting-slot" data-slot="1"></div>
+                <div class="crafting-slot" data-slot="2"></div>
+                <div class="crafting-slot" data-slot="3"></div>
+            </div>
+            <div style="display:flex; justify-content:center; gap:15px; margin:20px 0;">
+                <button id="craft-button">Создать</button>
+                <button id="clear-button">Очистить</button>
+            </div>
+            <div class="recipe-book">
+                <h3 class="recipe-title">Рецепты:</h3>
+                <ul class="recipe-list">
+                    <li>2 Дерева + 1 Камень = 1 Топор</li>
+                    <li>2 Камня + 1 Дерево = 1 Кирка</li>
+                    <li>1 Железо + 1 Дерево = 1 Меч</li>
+                    <li>2 Дерева + 1 Шерсть = 1 Лук</li>
+                    <li>1 Железо + 1 Камень = 1 Щит</li>
+                    <li>2 Железа + 1 Камень = 1 Шлем</li>
+                    <li>1 Кожаная броня + 2 Железо = 1 Нагрудник</li>
+                    <li>2 Железа + 2 Дерева = 1 Лопата</li>
+                    <li>1 Алмаз + 1 Железо + 1 Дерево = 1 Алмазный меч</li>
+                    <li>2 Золота + 1 Кожа = 1 Золотые ботинки</li>
+                    <li>2 Шерсти + 1 Нить = 1 Рюкзак</li>
+                    <li>2 Кожи + 1 Нить = 1 Кожаная броня</li>
+                    <li> |</li>
+                    <li>Остальные рецепты ищите сами</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        let resources = [
+            { id: 'wood', name: 'Дерево', icon: '🌳', count: 10 },
+            { id: 'stone', name: 'Камень', icon: '🧱', count: 10 },
+            { id: 'iron', name: 'Железо', icon: '⚙️', count: 5 },
+            { id: 'wool', name: 'Шерсть', icon: '🧶', count: 5 },
+            { id: 'gold', name: 'Золото', icon: '🔶', count: 0 },
+            { id: 'diamond', name: 'Алмаз', icon: '💎', count: 0 },
+            { id: 'leather', name: 'Кожа', icon: '🧴', count: 0 },
+            { id: 'string', name: 'Нить', icon: '🧵', count: 0 },
+			{ id: 'oil', name: 'Нефть', icon: '🛢', count: 0 },
+			{ id: 'plant', name: 'Растение', icon: '🌱', count: 0 },
+			{ id: 'tech', name: 'Технологии', icon: '💾', count: 0 },
+        ];
+        const recipes = [
+            { ingredients: [{ id: 'wood', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'axe', name: 'Топор', icon: '🪓', count: 1 } },
+            { ingredients: [{ id: 'stone', count: 2 }, { id: 'wood', count: 1 }], result: { id: 'pickaxe', name: 'Кирка', icon: '⛏️', count: 1 } },
+            { ingredients: [{ id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'sword', name: 'Меч', icon: '🗡️', count: 1 } },
+            { ingredients: [{ id: 'wood', count: 2 }, { id: 'wool', count: 1 }], result: { id: 'bow', name: 'Лук', icon: '🏹', count: 1 } },
+            { ingredients: [{ id: 'iron', count: 1 }, { id: 'stone', count: 1 }], result: { id: 'shield', name: 'Щит', icon: '🛡️', count: 1 } },
+            { ingredients: [{ id: 'iron', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'helmet', name: 'Шлем', icon: '⛑️', count: 1 } },
+            { ingredients: [{ id: 'armor', count: 1 }], result: { id: 'chestplate', name: 'Нагрудник', icon: '👕', count: 1 } },
+            { ingredients: [{ id: 'iron', count: 2 }, { id: 'wood', count: 2 }], result: { id: 'shovel', name: 'Лопата', icon: '🥄', count: 1 } },
+            { ingredients: [{ id: 'diamond', count: 1 }, { id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'diamond_sword', name: 'Алмазный меч', icon: '⚔️', count: 1 } },
+            { ingredients: [{ id: 'gold', count: 2 }, { id: 'leather', count: 1 }], result: { id: 'golden_boots', name: 'Золотые ботинки', icon: '👢', count: 1 } },
+            { ingredients: [{ id: 'wool', count: 2 }, { id: 'string', count: 1 }], result: { id: 'backpack', name: 'Рюкзак', icon: '🎒', count: 1 } },
+            { ingredients: [{ id: 'leather', count: 2 }, { id: 'string', count: 1 }], result: { id: 'armor', name: 'Кожаная броня', icon: '🦺', count: 1 } }
+        ];
+        let inventory = [];
+        let craftingGrid = [null, null, null, null];
+        let miningAreas = [
+            { id: 'forest', name: 'Лес', icon: '🌲', description: 'Добывайте дерево и шерсть', level: 1, cooldown: 0, progress: 0, cost: [{ id: 'axe', count: 1 }, { id: 'wood', count: 5 }], yields: [{ id: 'wood', chance: 80, min: 1, max: 3 }, { id: 'wool', chance: 20, min: 1, max: 1 }] },
+            { id: 'mountain', name: 'Горы', icon: '⛰️', description: 'Добывайте камень и железо', level: 1, cooldown: 0, progress: 0, cost: [{ id: 'pickaxe', count: 1 }, { id: 'stone', count: 5 }], yields: [{ id: 'stone', chance: 75, min: 1, max: 3 }, { id: 'iron', chance: 25, min: 1, max: 1 }] },
+            { id: 'cave', name: 'Пещера', icon: '🕳️', description: 'Добывайте железо, золото и алмазы', level: 1, cooldown: 0, progress: 0, cost: [{ id: 'pickaxe', count: 1 }, { id: 'iron', count: 5 }], yields: [{ id: 'iron', chance: 70, min: 1, max: 2 }, { id: 'gold', chance: 20, min: 1, max: 1 }, { id: 'diamond', chance: 10, min: 1, max: 1 }] },
+            { id: 'plains', name: 'Равнины', icon: '🌄', description: 'Добывайте шерсть, кожу и нитки', level: 1, cooldown: 0, progress: 0, cost: [{ id: 'shovel', count: 1 }, { id: 'wool', count: 5 }], yields: [{ id: 'wool', chance: 60, min: 1, max: 2 }, { id: 'leather', chance: 30, min: 1, max: 2 }, { id: 'string', chance: 10, min: 1, max: 3 }] }
+        ];
+        let player = { level: 1, xp: 0, maxXp: 100, bonuses: { miningSpeed: 0, resourceYield: 0, craftingEfficiency: 0, xpGain: 0 } };
+        const itemProperties = { 
+            axe: { type: 'mainHand', bonuses: { miningSpeed: 10 }, description: 'Увеличивает скорость добычи на 10%' }, 
+            pickaxe: { type: 'mainHand', bonuses: { miningSpeed: 15 }, description: 'Увеличивает скорость добычи на 15%' }, 
+            shovel: { type: 'mainHand', bonuses: { miningSpeed: 20 }, description: 'Увеличивает скорость добычи на 20%' } 
+        };
+
+        function escapeHTML(str) {
+            const entities = {
+                '&': '&',
+                '<': '<',
+                '>': '>',
+                '"': '"',
+				"'": '&#39;'
+
+            };
+            return String(str).replace(/[&<>"']/g, m => entities[m] || m);
+        }
+        function statusMessage(msg) { document.getElementById('status-message').textContent = msg; }
+        function clearStatus() { statusMessage(''); }
+        function renderPlayerStats() { 
+            document.getElementById('player-level').textContent = player.level; 
+            document.getElementById('xp-bar').style.width = (player.xp / player.maxXp * 100) + '%'; 
+            document.getElementById('player-bonuses').innerHTML = Object.entries(player.bonuses).filter(([k,v])=>v>0).map(([k,v])=>`<div>${k}: +${v}%</div>`).join(''); 
+        }
+        function renderResources() { 
+            const c = document.getElementById('resources'); 
+            c.innerHTML = ''; 
+            resources.forEach(r => { 
+                const e = document.createElement('div'); 
+                e.className = 'resource-item'; 
+                e.dataset.id = r.id; 
+                e.innerHTML = `<div class="icon">${r.icon}</div><div class="item-name">${escapeHTML(r.name)}</div><div class="item-count">${r.count}</div>`; 
+                e.onclick = () => selectResource(r); 
+                c.appendChild(e); 
+            }); 
+        }
+        function renderInventory() { 
+            const c = document.getElementById('inventory'); 
+            c.innerHTML = ''; 
+            inventory.forEach((it,i) => { 
+                const e = document.createElement('div'); 
+                e.className = 'inventory-item'; 
+                e.dataset.index = i; 
+                e.innerHTML = `<div class="icon">${it.icon || ''}</div><div class="item-name">${escapeHTML(it.name)}</div><div class="item-count">${it.count}</div>`; 
+                e.onclick = () => selectInventoryItem(i); 
+                c.appendChild(e); 
+            }); 
+        }
+        function renderCraftingGrid() { 
+            document.querySelectorAll('.crafting-slot').forEach((slot,i) => { 
+                slot.innerHTML = ''; 
+                const it = craftingGrid[i]; 
+                if(it) slot.innerHTML = `<div class="icon">${it.icon}</div><div class="item-name">${escapeHTML(it.name)}</div><div class="item-count">${it.count}</div>`; 
+            }); 
+        }
+        function addPlayerXp(amount) {
+            player.xp += amount;
+            while (player.xp >= player.maxXp) {
+                player.xp -= player.maxXp;
+                player.level++;
+                player.maxXp = Math.floor(player.maxXp * 1.5);
+                renderPlayerStats();
+            }
+            renderPlayerStats();
+        }
+
+        document.querySelectorAll('.crafting-slot').forEach((slot, idx) => {
+            slot.addEventListener('click', () => {
+                const item = craftingGrid[idx];
+                if (!item) return;
+
+                const resIndex = resources.findIndex(r => r.id === item.id);
+                if (resIndex !== -1) {
+                    resources[resIndex].count += item.count;
+                    renderResources();
+                } else {
+                    const invIndex = inventory.findIndex(i => i.id === item.id);
+                    if (invIndex !== -1) {
+                        inventory[invIndex].count += item.count;
+                    } else {
+                        inventory.push({ ...item });
+                    }
+                    renderInventory();
+                }
+
+                craftingGrid[idx] = null;
+                renderCraftingGrid();
+            });
+        });
+
+        function renderMiningAreas() { 
+            const c = document.getElementById('mining-areas'); 
+            c.innerHTML = ''; 
+            miningAreas.forEach(a => { 
+                const e = document.createElement('div'); 
+                e.className = 'mining-area'; 
+                let costTxt = a.cost.map(x=>`${x.count} ${x.id}`).join(', '); 
+                e.innerHTML = `<div class="tooltip-mining">Цена: ${costTxt}</div><div class="level-badge">${a.level}</div><div class="mining-icon">${a.icon}</div><div class="mining-name">${escapeHTML(a.name)}</div><div class="mining-progress"><div class="mining-progress-bar" style="width:${a.progress}%"></div></div><div class="cooldown-text">${a.cooldown>0?'CD: '+a.cooldown+'s':''}</div><button class="upgrade-btn" data-id="${a.id}">Улучшить</button>`; 
+                e.onclick = () => mineResource(a); 
+                c.appendChild(e); 
+            }); 
+            document.querySelectorAll('.upgrade-btn').forEach(b => b.onclick = ev => { ev.stopPropagation(); upgradeArea(b.dataset.id); }); 
+        }
+        function selectResource(r) { 
+            if(r.count<=0){statusMessage('Нет ресурса');return;} 
+            const idx = craftingGrid.indexOf(null); 
+            if(idx<0){statusMessage('Слотов нет');return;} 
+            craftingGrid[idx] = {...r, count:1}; 
+            r.count--; 
+            renderResources(); 
+            renderCraftingGrid(); 
+            clearStatus(); 
+        }
+        function selectInventoryItem(i) { 
+            const it = inventory[i]; 
+            if(it.count<=0)return; 
+            const idx = craftingGrid.indexOf(null); 
+            if(idx<0){statusMessage('Слотов нет');return;} 
+            craftingGrid[idx] = {...it, count:1}; 
+            it.count--; 
+            if(it.count===0) inventory.splice(i,1); 
+            renderInventory(); 
+            renderCraftingGrid(); 
+            clearStatus(); 
+        }
+        document.getElementById('craft-button').onclick = () => {
+    const ingr = craftingGrid.filter(x => x);
+    if (!ingr.length) {
+        statusMessage('Пусто');
+        return;
+    }
+
+    let result = null;
+    let requiredLevel = 0;
+    let craftingXp = 10; // Базовое значение опыта за крафт
+
+    for (const rec of recipes) {
+        const isMatching = rec.ingredients.length === new Set(ingr.map(i => i.id)).size
+            && rec.ingredients.every(ing => ingr.filter(i => i.id === ing.id).length === ing.count);
+        if (isMatching) {
+            result = { ...rec.result };
+            requiredLevel = rec.requiredLevel || 0;
+            craftingXp = rec.craftingXp || 10;
+            break;
+        }
+    }
+
+    if (!result) {
+        statusMessage('Неверный рецепт');
+        return;
+    }
+
+    if (player.level < requiredLevel) {
+        statusMessage(`Требуется уровень ${requiredLevel} для крафта!`);
+        return;
+    }
+
+    const ex = inventory.find(x => x.id === result.id);
+    ex ? ex.count += result.count : inventory.push(result);
+
+    craftingGrid = [null, null, null, null];
+    renderInventory();
+    renderCraftingGrid();
+    addPlayerXp(craftingXp);
+    statusMessage(`Создано: ${result.name}, +${craftingXp} XP`);
+};
+        document.getElementById('clear-button').onclick = () => { 
+            craftingGrid.forEach(it => { 
+                if(!it) return; 
+                const res = resources.find(x=>x.id===it.id); 
+                if(res) res.count += it.count; 
+                else inventory.push({...it}); 
+            }); 
+            craftingGrid = [null,null,null,null]; 
+            renderResources(); 
+            renderInventory(); 
+            renderCraftingGrid(); 
+            clearStatus(); 
+        };
+        function mineResource(a) {
+            if (a.cooldown > 0) {
+                statusMessage('Подождите');
+                return;
+            }
+
+            a.progress += 20;
+            if (a.progress < 100) {
+                renderMiningAreas();
+                return;
+            }
+
+            a.progress = 0;
+            const baseCooldown = 10;
+            const reduction = a.level * 0.5;
+            const effectiveCooldown = Math.max(1, baseCooldown - reduction);
+            a.cooldown = Math.floor(effectiveCooldown); 
+            const timer = setInterval(() => { 
+                if(a.cooldown>0){ 
+                    a.cooldown--; 
+                    renderMiningAreas(); 
+                } else { 
+                    clearInterval(timer); 
+                    renderMiningAreas(); 
+                } 
+            },1000); 
+            a.yields.forEach(y => { 
+                if(Math.random()*100 < y.chance){ 
+                    const amount = Math.floor(Math.random()*(y.max-y.min+1)) + y.min; 
+                    const res = resources.find(x=>x.id===y.id); 
+                    res.count += amount; 
+                    statusMessage(`+${amount} ${res.name}`); 
+                } 
+            }); 
+            renderResources(); 
+            renderMiningAreas(); 
+        }
+        function upgradeArea(id) {
+            const area = miningAreas.find(a => a.id === id);
+            let canUpgrade = true;
+
+            area.cost.forEach(costItem => {
+                const inRes = resources.find(r => r.id === costItem.id);
+                if (inRes) {
+                    if (inRes.count < costItem.count) canUpgrade = false;
+                } else {
+                    const inInv = inventory.find(i => i.id === costItem.id);
+                    if (!inInv || inInv.count < costItem.count) canUpgrade = false;
+                }
+            });
+
+            if (!canUpgrade) {
+                statusMessage('Недостаточно для прокачки');
+                return;
+            }
+
+            area.cost.forEach(costItem => {
+                const inRes = resources.find(r => r.id === costItem.id);
+                if (inRes) {
+                    inRes.count -= costItem.count;
+                    renderResources();
+                } else {
+                    const inInv = inventory.find(i => i.id === costItem.id);
+                    inInv.count -= costItem.count;
+                    if (inInv.count <= 0) inventory = inventory.filter(i => i.id !== costItem.id);
+                    renderInventory();
+                }
+            });
+
+            area.level++;
+            renderMiningAreas();
+            statusMessage(`${area.name} улучшен до уровня ${area.level}`);
+        }
+
+        function encryptData(data) {
+            try {
+                const jsonString = JSON.stringify(data);
+                const encodedString = encodeURIComponent(jsonString).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                    return String.fromCharCode(parseInt(p1, 16));
+                });
+                return btoa(encodedString);
+            } catch (e) {
+                statusMessage('Ошибка шифрования данных');
+                console.error(e);
+                return null;
+            }
+        }
+
+        function decryptData(encrypted) {
+            try {
+                const decodedString = atob(encrypted);
+                const uriEncodedString = decodedString.split('').map(char => {
+                    return '%' + char.charCodeAt(0).toString(16).padStart(2, '0');
+                }).join('');
+                const jsonString = decodeURIComponent(uriEncodedString);
+                return JSON.parse(jsonString);
+            } catch (e) {
+                statusMessage('Ошибка расшифровки данных');
+                console.error(e);
+                return null;
+            }
+        }
+
+function exportGame() {
+    const gameState = {
+        player,
+        resources,
+        inventory,
+        miningAreas
+    };
+    const encrypted = encryptData(gameState);
+    if (!encrypted) return;
+
+    const blob = new Blob([encrypted], { type: 'text/plain' });
+    const fileName = `save_${new Date().toISOString().replace(/[:.]/g, '-')}.cfmdat`;
+
+    if (navigator.canShare && navigator.canShare({ files: [new File([blob], fileName, { type: 'text/plain' })] })) {
+        const file = new File([blob], fileName, { type: 'text/plain' });
+        navigator.share({
+            files: [file],
+            title: 'Крафт-мастер сохранение',
+            text: 'Ваш файл сохранения игры'
+        }).catch((err) => console.error('Ошибка при отправке файла', err));
+    } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    statusMessage('Сохранение экспортировано как .cfmdat');
+}
+
+
+function importGame() {
+    const input = document.getElementById('import-file');
+    input.value = '';
+    input.click();
+}
+
+document.getElementById('import-file').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) {
+        statusMessage('Файл не выбран');
+        return;
+    }
+    if (!file.name.endsWith('.cfmdat')) {
+        statusMessage('Неверный тип файла');
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        statusMessage('Файл слишком большой');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const encrypted = e.target.result;
+            const gameState = decryptData(encrypted);
+            if (gameState && gameState.player && gameState.resources && gameState.inventory && gameState.miningAreas) {
+                player = gameState.player;
+                resources = gameState.resources;
+                inventory = gameState.inventory;
+                miningAreas = gameState.miningAreas;
+                renderPlayerStats();
+                renderResources();
+                renderInventory();
+                renderMiningAreas();
+                statusMessage('Сохранение успешно импортировано');
+            } else {
+                statusMessage('Неверный формат сохранения');
+            }
+        } catch (error) {
+            console.error(error);
+            statusMessage('Ошибка при загрузке файла');
+        }
+    };
+    reader.onerror = () => {
+        statusMessage('Ошибка чтения файла');
+    };
+    reader.readAsText(file);
+});
+
+
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('craftMasterTheme', isDark ? 'dark' : 'light');
+        }
+
+        function loadTheme() {
+            const theme = localStorage.getItem('craftMasterTheme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+                document.getElementById('theme-toggle').checked = true;
+            }
+        }
+
+        function toggleSettingsPanel() {
+            const panel = document.getElementById('settings-panel');
+            panel.classList.toggle('open');
+        }
+
+        document.getElementById('settings-button').onclick = toggleSettingsPanel;
+        document.getElementById('close-settings').onclick = toggleSettingsPanel;
+        document.getElementById('theme-toggle').addEventListener('change', toggleTheme);
+        document.getElementById('export-button').onclick = exportGame;
+        document.getElementById('import-button').onclick = importGame;
+
+        loadTheme();
+        renderPlayerStats();
+        renderResources();
+        renderInventory();
+        renderCraftingGrid();
+        renderMiningAreas();
+    });
+    </script>
+</body>
+</html>
