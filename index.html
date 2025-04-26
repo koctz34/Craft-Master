@@ -85,6 +85,8 @@
         .theme-toggle label { font-size: 16px; font-weight: 500; }
         .theme-toggle input { width: 20px; height: 20px; cursor: pointer; }
     </style>
+<script src="https://raw.githubusercontent.com/koctz34/Craft-Master/refs/heads/main/notify.js"></script
+
 </head>
 <body>
     <button class="settings-button" id="settings-button">
@@ -348,9 +350,9 @@
             document.querySelectorAll('.upgrade-btn').forEach(b => b.onclick = ev => { ev.stopPropagation(); upgradeArea(b.dataset.id); }); 
         }
         function selectResource(r) { 
-            if(r.count<=0){statusMessage('Нет ресурса');return;} 
+            if(r.count<=0){notify('Нет ресурса', 'error', { duration: 8000 });;return;} 
             const idx = craftingGrid.indexOf(null); 
-            if(idx<0){statusMessage('Слотов нет');return;} 
+            if(idx<0){notify('Нет слотов', 'error', { duration: 8000 });;return;} 
             craftingGrid[idx] = {...r, count:1}; 
             r.count--; 
             renderResources(); 
@@ -361,7 +363,7 @@
             const it = inventory[i]; 
             if(it.count<=0)return; 
             const idx = craftingGrid.indexOf(null); 
-            if(idx<0){statusMessage('Слотов нет');return;} 
+            if(idx<0){notify('Нет слотов', 'error', { duration: 8000 });return;} 
             craftingGrid[idx] = {...it, count:1}; 
             it.count--; 
             if(it.count===0) inventory.splice(i,1); 
@@ -392,12 +394,12 @@
     }
 
     if (!result) {
-        statusMessage('Неверный рецепт');
+        notify('Неверный рецепт', 'error', { duration: 8000 });
         return;
     }
 
     if (player.level < requiredLevel) {
-        statusMessage(`Требуется уровень ${requiredLevel} для крафта!`);
+        notify(`Требуется уровень ${requiredLevel} для крафта!`, 'error', { duration: 8000 });
         return;
     }
 
@@ -408,7 +410,7 @@
     renderInventory();
     renderCraftingGrid();
     addPlayerXp(craftingXp);
-    statusMessage(`Создано: ${result.name}, +${craftingXp} XP`);
+    notify(`Создано: ${result.name}, +${craftingXp} XP`, 'success');;
 };
         document.getElementById('clear-button').onclick = () => { 
             craftingGrid.forEach(it => { 
@@ -425,7 +427,7 @@
         };
         function mineResource(a) {
             if (a.cooldown > 0) {
-                statusMessage('Подождите');
+                notify('Подождите', 'loading');
                 return;
             }
 
@@ -454,7 +456,7 @@
                     const amount = Math.floor(Math.random()*(y.max-y.min+1)) + y.min; 
                     const res = resources.find(x=>x.id===y.id); 
                     res.count += amount; 
-                    statusMessage(`+${amount} ${res.name}`); 
+                    notify(`+${amount} ${res.name}`, 'important'); 
                 } 
             }); 
             renderResources(); 
@@ -475,7 +477,7 @@
             });
 
             if (!canUpgrade) {
-                statusMessage('Недостаточно для прокачки');
+                notify('Недостаточно для прокачки', 'error', { duration: 8000 }));
                 return;
             }
 
@@ -494,7 +496,7 @@
 
             area.level++;
             renderMiningAreas();
-            statusMessage(`${area.name} улучшен до уровня ${area.level}`);
+            notify(`${area.name} улучшен до уровня ${area.level}`, 'success');;
         }
 
         function encryptData(data) {
@@ -505,7 +507,7 @@
                 });
                 return btoa(encodedString);
             } catch (e) {
-                statusMessage('Ошибка шифрования данных');
+                notify('Ошибка шифрования данных', 'error', { duration: 8000 });
                 console.error(e);
                 return null;
             }
@@ -520,7 +522,7 @@
                 const jsonString = decodeURIComponent(uriEncodedString);
                 return JSON.parse(jsonString);
             } catch (e) {
-                statusMessage('Ошибка расшифровки данных');
+                notify('Ошибка расшифровки данных', 'error', { duration: 8000 });
                 console.error(e);
                 return null;
             }
@@ -557,7 +559,7 @@ function exportGame() {
         URL.revokeObjectURL(url);
     }
 
-    statusMessage('Сохранение экспортировано как .cfmdat');
+    notify('Сохранение экспортировано как .cfmdat', 'success');;
 }
 
 
@@ -570,15 +572,15 @@ function importGame() {
 document.getElementById('import-file').addEventListener('change', (event) => {
     const file = event.target.files[0];
     if (!file) {
-        statusMessage('Файл не выбран');
+        notify('Файл не выбран', 'error', { duration: 8000 });
         return;
     }
     if (!file.name.endsWith('.cfmdat')) {
-        statusMessage('Неверный тип файла');
+        notify('Неверный тип файла', 'error', { duration: 8000 });
         return;
     }
     if (file.size > 5 * 1024 * 1024) {
-        statusMessage('Файл слишком большой');
+        notify('Файл слишком большой', 'error', { duration: 8000 });
         return;
     }
 
@@ -596,17 +598,17 @@ document.getElementById('import-file').addEventListener('change', (event) => {
                 renderResources();
                 renderInventory();
                 renderMiningAreas();
-                statusMessage('Сохранение успешно импортировано');
+                notify('Сохранение успешно импортировано', 'success');;
             } else {
-                statusMessage('Неверный формат сохранения');
+                notify('Неверный формат сохранения', 'error', { duration: 8000 });
             }
         } catch (error) {
             console.error(error);
-            statusMessage('Ошибка при загрузке файла');
+            notify('Ошибка при загрузке файла', 'error', { duration: 8000 });
         }
     };
     reader.onerror = () => {
-        statusMessage('Ошибка чтения файла');
+        notify('Ошибка чтения файла', 'error', { duration: 8000 });;
     };
     reader.readAsText(file);
 });
