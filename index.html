@@ -555,7 +555,7 @@
             clearStatus(); 
         };
         function mineResource(a) {
-	    if (player.level < a.levelR) {
+			if (player.level < a.levelR) {
                 notify(`Требуется уровень ${a.levelR} для добычи!`, 'error', { duration: 8000 });
                 return;
             }
