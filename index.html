@@ -369,10 +369,10 @@
         let inventory = [];
         let craftingGrid = [null, null, null, null];
         let miningAreas = [
-            { id: 'forest', name: 'Лес', icon: '🌲', description: 'Добывайте дерево и шерсть. Уровень 1', level: 1, cooldown: 0, progress: 0, level: 1, cost: [{ id: 'axe', count: 1 }, { id: 'wood', count: 5 }], yields: [{ id: 'wood', chance: 80, min: 1, max: 3 }, { id: 'wool', chance: 20, min: 1, max: 1 }] },
-            { id: 'mountain', name: 'Горы', icon: '⛰️', description: 'Добывайте камень и железо. Уровень 1', level: 1, cooldown: 0, progress: 0, level: 1, cost: [{ id: 'pickaxe', count: 1 }, { id: 'stone', count: 5 }], yields: [{ id: 'stone', chance: 75, min: 1, max: 3 }, { id: 'iron', chance: 25, min: 1, max: 1 }] },
-            { id: 'cave', name: 'Пещера', icon: '🕳️', description: 'Добывайте железо, золото и алмазы. Уровень 1', level: 1, cooldown: 0, progress: 0, level: 1, cost: [{ id: 'pickaxe', count: 1 }, { id: 'iron', count: 5 }], yields: [{ id: 'iron', chance: 70, min: 1, max: 2 }, { id: 'gold', chance: 20, min: 1, max: 1 }, { id: 'diamond', chance: 10, min: 1, max: 1 }] },
-            { id: 'plains', name: 'Равнины', icon: '🌄', description: 'Добывайте шерсть, кожу и нитки. Уровень 1', level: 1, cooldown: 0, progress: 0, level: 1, cost: [{ id: 'shovel', count: 1 }, { id: 'wool', count: 5 }], yields: [{ id: 'wool', chance: 60, min: 1, max: 2 }, { id: 'leather', chance: 30, min: 1, max: 2 }, { id: 'string', chance: 10, min: 1, max: 3 }] }
+            { id: 'forest', name: 'Лес', icon: '🌲', description: 'Добывайте дерево и шерсть. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'axe', count: 1 }, { id: 'wood', count: 5 }], yields: [{ id: 'wood', chance: 80, min: 1, max: 3 }, { id: 'wool', chance: 20, min: 1, max: 1 }] },
+            { id: 'mountain', name: 'Горы', icon: '⛰️', description: 'Добывайте камень и железо. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'pickaxe', count: 1 }, { id: 'stone', count: 5 }], yields: [{ id: 'stone', chance: 75, min: 1, max: 3 }, { id: 'iron', chance: 25, min: 1, max: 1 }] },
+            { id: 'cave', name: 'Пещера', icon: '🕳️', description: 'Добывайте железо, золото и алмазы. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'pickaxe', count: 1 }, { id: 'iron', count: 5 }], yields: [{ id: 'iron', chance: 70, min: 1, max: 2 }, { id: 'gold', chance: 20, min: 1, max: 1 }, { id: 'diamond', chance: 10, min: 1, max: 1 }] },
+            { id: 'plains', name: 'Равнины', icon: '🌄', description: 'Добывайте шерсть, кожу и нитки. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'shovel', count: 1 }, { id: 'wool', count: 5 }], yields: [{ id: 'wool', chance: 60, min: 1, max: 2 }, { id: 'leather', chance: 30, min: 1, max: 2 }, { id: 'string', chance: 10, min: 1, max: 3 }] }
         ];
         let player = { level: 1, xp: 0, maxXp: 100, bonuses: { miningSpeed: 0, resourceYield: 0, craftingEfficiency: 0, xpGain: 0 } };
         const itemProperties = { 
@@ -555,8 +555,8 @@
             clearStatus(); 
         };
         function mineResource(a) {
-	    if (player.level < a.level) {
-                notify(`Требуется уровень ${level} для добычи!`, 'error', { duration: 8000 });
+	    if (player.level < a.levelR) {
+                notify(`Требуется уровень ${a.levelR} для добычи!`, 'error', { duration: 8000 });
                 return;
             }
 		
