@@ -52,7 +52,7 @@
         .resource-mining, .resources-container, .inventory-container, .crafting-container, .save-container { background: var(--container-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px var(--shadow-color); margin-bottom: 20px; }
         .mining-areas, .resources-grid, .inventory-grid, .crafting-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 15px; }
         .mining-area, .resource-item, .inventory-item, .crafting-slot { background: var(--slot-bg); border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; position: relative; user-select: none; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
-        .mining-area { height: 180px; }
+        .mining-area { height: 280px; }
         .crafting-slot { background: var(--crafting-slot-bg); height: 90px; }
         .mining-area:hover, .resource-item:hover, .inventory-item:hover, .crafting-slot:hover { background: var(--hover-bg); transform: translateY(-3px); box-shadow: 0 2px 8px var(--shadow-color); }
         .level-badge { position: absolute; top: 8px; right: 8px; background: var(--button-bg); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none; }
@@ -472,7 +472,7 @@
                 const e = document.createElement('div'); 
                 e.className = 'mining-area'; 
                 let costTxt = a.cost.map(x=>`${x.count} ${x.id}`).join(', '); 
-                e.innerHTML = `<div class="tooltip-mining">Цена: ${costTxt}</div><div class="level-badge">${a.level}</div><div class="mining-icon">${a.icon}</div><div class="mining-name">${escapeHTML(a.name)}</div><div class="mining-progress"><div class="mining-progress-bar" style="width:${a.progress}%"></div></div><div class="cooldown-text">${a.cooldown>0?'CD: '+a.cooldown+'s':''}</div><button class="upgrade-btn" data-id="${a.id}">Улучшить</button>`; 
+                e.innerHTML = `<div class="tooltip-mining">Цена: ${costTxt}</div><div class="level-badge">${a.level}</div><div class="mining-icon">${a.icon}</div><div class="mining-name">${escapeHTML(a.name)}</div><div class="mining-description">${escapeHTML(a.description)}</div><div class="mining-progress"><div class="mining-progress-bar" style="width:${a.progress}%"></div></div><div class="cooldown-text">${a.cooldown>0?'CD: '+a.cooldown+'s':''}</div><button class="upgrade-btn" data-id="${a.id}">Улучшить</button>`; 
                 e.onclick = () => mineResource(a); 
                 c.appendChild(e); 
             }); 
