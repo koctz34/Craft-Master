@@ -222,20 +222,28 @@
 			{ id: 'oil', name: 'Нефть', icon: '🛢', count: 0 },
 			{ id: 'plant', name: 'Растение', icon: '🌱', count: 0 },
 			{ id: 'tech', name: 'Технологии', icon: '💾', count: 0 },
+			{ id: 'gunpowder', name: 'Порох', icon: '🧨', count: 0 },
+			{ id: 'paper', name: 'Бумага', icon: '📄', count: 0 },
         ];
         const recipes = [
-            { ingredients: [{ id: 'wood', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'axe', name: 'Топор', icon: '🪓', count: 1 } },
-            { ingredients: [{ id: 'stone', count: 2 }, { id: 'wood', count: 1 }], result: { id: 'pickaxe', name: 'Кирка', icon: '⛏️', count: 1 } },
-            { ingredients: [{ id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'sword', name: 'Меч', icon: '🗡️', count: 1 } },
-            { ingredients: [{ id: 'wood', count: 2 }, { id: 'wool', count: 1 }], result: { id: 'bow', name: 'Лук', icon: '🏹', count: 1 } },
-            { ingredients: [{ id: 'iron', count: 1 }, { id: 'stone', count: 1 }], result: { id: 'shield', name: 'Щит', icon: '🛡️', count: 1 } },
-            { ingredients: [{ id: 'iron', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'helmet', name: 'Шлем', icon: '⛑️', count: 1 } },
-            { ingredients: [{ id: 'armor', count: 1 }], result: { id: 'chestplate', name: 'Нагрудник', icon: '👕', count: 1 } },
-            { ingredients: [{ id: 'iron', count: 2 }, { id: 'wood', count: 2 }], result: { id: 'shovel', name: 'Лопата', icon: '🥄', count: 1 } },
-            { ingredients: [{ id: 'diamond', count: 1 }, { id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'diamond_sword', name: 'Алмазный меч', icon: '⚔️', count: 1 } },
-            { ingredients: [{ id: 'gold', count: 2 }, { id: 'leather', count: 1 }], result: { id: 'golden_boots', name: 'Золотые ботинки', icon: '👢', count: 1 } },
-            { ingredients: [{ id: 'wool', count: 2 }, { id: 'string', count: 1 }], result: { id: 'backpack', name: 'Рюкзак', icon: '🎒', count: 1 } },
-            { ingredients: [{ id: 'leather', count: 2 }, { id: 'string', count: 1 }], result: { id: 'armor', name: 'Кожаная броня', icon: '🦺', count: 1 } }
+	//Инструменты
+            { ingredients: [{ id: 'wood', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'axe', name: 'Топор', icon: '🪓', count: 1 },  craftingXp: 5, requiredLevel: 1 },
+            { ingredients: [{ id: 'stone', count: 2 }, { id: 'wood', count: 1 }], result: { id: 'pickaxe', name: 'Кирка', icon: '⛏️', count: 1 },  craftingXp: 5, requiredLevel: 1 },
+	    { ingredients: [{ id: 'iron', count: 1 }, { id: 'wood', count: 2 }], result: { id: 'shovel', name: 'Лопата', icon: '🥄', count: 1 },  craftingXp: 5, requiredLevel: 1 },
+			
+	//Оружие
+            { ingredients: [{ id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'sword', name: 'Меч', icon: '🗡️', count: 1 }, craftingXp: 7, requiredLevel: 1 },
+            { ingredients: [{ id: 'wood', count: 2 }, { id: 'wool', count: 1 }], result: { id: 'bow', name: 'Лук', icon: '🏹', count: 1 }, craftingXp: 7, requiredLevel: 1 },
+	    { ingredients: [{ id: 'diamond', count: 1 }, { id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'diamond_sword', name: 'Алмазный меч', icon: '⚔️', count: 1 }, craftingXp: 14, requiredLevel: 3  },
+			
+	//Броня и щиты
+            { ingredients: [{ id: 'iron', count: 1 }, { id: 'stone', count: 1 }], result: { id: 'shield', name: 'Щит', icon: '🛡️', count: 1 }, craftingXp: 5, requiredLevel: 1  },
+            { ingredients: [{ id: 'iron', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'helmet', name: 'Шлем', icon: '⛑️', count: 1 }, craftingXp: 7, requiredLevel: 2  },
+	    { ingredients: [{ id: 'leather', count: 2 }, { id: 'string', count: 1 }], result: { id: 'armor', name: 'Кожаная броня', icon: '🦺', count: 1 }, craftingXp: 10, requiredLevel: 2 },
+            { ingredients: [{ id: 'armor', count: 1 }, { id: 'iron', count: 3 }], result: { id: 'chestplate', name: 'Нагрудник', icon: '👕', count: 1 }, craftingXp: 18, requiredLevel: 3 },
+            
+        //Рюкзаки и поясы
+	    { ingredients: [{ id: 'wool', count: 2 }, { id: 'string', count: 1 }], result: { id: 'backpack', name: 'Рюкзак', icon: '🎒', count: 1 }, craftingXp: 8, requiredLevel: 2  },
         ];
         let inventory = [];
         let craftingGrid = [null, null, null, null];
