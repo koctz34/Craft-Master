@@ -368,56 +368,87 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
             { id: 'wood', name: 'Дерево', icon: '🌳', count: 10 },
             { id: 'stone', name: 'Камень', icon: '🧱', count: 10 },
             { id: 'iron', name: 'Железо', icon: '⚙️', count: 5 },
-            { id: 'wool', name: 'Шерсть', icon: '🧶', count: 5 },
-            { id: 'gold', name: 'Золото', icon: '🔶', count: 0 },
+			{ id: 'coal', name: 'Уголь', icon: '⬛', count: 0 },
+			{ id: 'gold', name: 'Золото', icon: '🔶', count: 0 },
             { id: 'diamond', name: 'Алмаз', icon: '💎', count: 0 },
+			{ id: 'sand', name: 'Песок', icon: '🟨', count: 0 },
+			{ id: 'wool', name: 'Шерсть', icon: '🧶', count: 5 },
             { id: 'leather', name: 'Кожа', icon: '🧴', count: 0 },
             { id: 'string', name: 'Нить', icon: '🧵', count: 0 },
             { id: 'oil', name: 'Нефть', icon: '🛢', count: 0 },
+			{ id: 'tech', name: 'Технологии', icon: '💾', count: 0 },
             { id: 'plant', name: 'Растение', icon: '🌱', count: 0 },
-            { id: 'tech', name: 'Технологии', icon: '💾', count: 0 },
-            { id: 'gunpowder', name: 'Порох', icon: '🧨', count: 0 },
-            { id: 'paper', name: 'Бумага', icon: '📄', count: 0 },
+			{ id: 'animal', name: 'Животное', icon: '🐄', count: 0 }
         ];
         const recipes = [
+		    //Инструменты
             { ingredients: [{ id: 'wood', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'axe', name: 'Топор', icon: '🪓', count: 1 }, craftingXp: 5, requiredLevel: 1 },
             { ingredients: [{ id: 'stone', count: 2 }, { id: 'wood', count: 1 }], result: { id: 'pickaxe', name: 'Кирка', icon: '⛏️', count: 1 }, craftingXp: 5, requiredLevel: 1 },
             { ingredients: [{ id: 'iron', count: 1 }, { id: 'wood', count: 2 }], result: { id: 'shovel', name: 'Лопата', icon: '🥄', count: 1 }, craftingXp: 5, requiredLevel: 1 },
-            { ingredients: [{ id: 'string', count: 2 }, { id: 'steel', count: 2 }], result: { id: 'oil_pump', name: 'Нефтяной насос', icon: '🚏', count: 1 }, craftingXp: 10, requiredLevel: 4 },
+			{ ingredients: [{ id: 'plant', count: 2 }, { id: 'meat', count: 2 }], result: { id: 'food_animal', name: 'Корм', icon: '🍖', count: 1 }, craftingXp: 5, requiredLevel: 3 },
+			{ ingredients: [{ id: 'wood', count: 1 }, { id: 'steel', count: 1 }], result: { id: 'knife', name: 'Нож', icon: '🔪', count: 1 }, craftingXp: 5, requiredLevel: 3 },
+			{ ingredients: [{ id: 'tech', count: 2 }, { id: 'steel', count: 2 }], result: { id: 'scaner', name: 'Сканер', icon: '🏒', count: 1 }, craftingXp: 10, requiredLevel: 4 },
+            { ingredients: [{ id: 'string', count: 2 }, { id: 'steel', count: 2 }], result: { id: 'oil_pump', name: 'Нефтяной насос', icon: '🚏', count: 1 }, craftingXp: 10, requiredLevel: 5 },
+			
+			//Оружие
             { ingredients: [{ id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'sword', name: 'Меч', icon: '🗡️', count: 1 }, craftingXp: 7, requiredLevel: 1 },
             { ingredients: [{ id: 'wood', count: 2 }, { id: 'wool', count: 1 }], result: { id: 'bow', name: 'Лук', icon: '🏹', count: 1 }, craftingXp: 7, requiredLevel: 1 },
             { ingredients: [{ id: 'diamond', count: 1 }, { id: 'iron', count: 1 }, { id: 'wood', count: 1 }], result: { id: 'diamond_sword', name: 'Алмазный меч', icon: '⚔️', count: 1 }, craftingXp: 14, requiredLevel: 3 },
-            { ingredients: [{ id: 'iron', count: 1 }, { id: 'stone', count: 1 }], result: { id: 'shield', name: 'Щит', icon: '🛡️', count: 1 }, craftingXp: 5, requiredLevel: 1 },
+            
+			//Защита
+			{ ingredients: [{ id: 'iron', count: 1 }, { id: 'stone', count: 1 }], result: { id: 'shield', name: 'Щит', icon: '🛡️', count: 1 }, craftingXp: 5, requiredLevel: 1 },
             { ingredients: [{ id: 'iron', count: 2 }, { id: 'stone', count: 1 }], result: { id: 'helmet', name: 'Шлем', icon: '⛑️', count: 1 }, craftingXp: 7, requiredLevel: 2 },
             { ingredients: [{ id: 'leather', count: 2 }, { id: 'string', count: 1 }], result: { id: 'armor', name: 'Кожаная броня', icon: '🦺', count: 1 }, craftingXp: 10, requiredLevel: 2 },
-            { ingredients: [{ id: 'armor', count: 1 }, { id: 'iron', count: 3 }], result: { id: 'chestplate', name: 'Нагрудник', icon: '👕', count: 1 }, craftingXp: 18, requiredLevel: 3 },
+            { ingredients: [{ id: 'armor', count: 1 }, { id: 'iron', count: 2 }], result: { id: 'chestplate', name: 'Нагрудник', icon: '👕', count: 1 }, craftingXp: 15, requiredLevel: 3 },
+			
+			//Хранение
             { ingredients: [{ id: 'wool', count: 2 }, { id: 'string', count: 1 }], result: { id: 'backpack', name: 'Рюкзак', icon: '🎒', count: 1 }, craftingXp: 8, requiredLevel: 2 },
+			
+			//Ресурсы
             { ingredients: [{ id: 'iron', count: 2 }, { id: 'gold', count: 1 }], result: { id: 'steel', name: 'Золотая сталь', icon: '🔩', count: 1 }, craftingXp: 1, requiredLevel: 3 },
+			{ ingredients: [{ id: 'animal', count: 1 }, { id: 'knife', count: 1 }], result: { id: 'meat', name: 'Мясо', icon: '🥩', count: 2 }, craftingXp: 4, requiredLevel: 3 },
+			{ ingredients: [{ id: 'animal', count: 1 }, { id: 'plant', count: 1 }], result: { id: 'milk', name: 'Молоко', icon: '🥛', count: 2 }, craftingXp: 2, requiredLevel: 3 },
+			
+			//Кулинария
+			{ ingredients: [{ id: 'meat', count: 2 }, { id: 'coal', count: 1 }], result: { id: 'cook_meat', name: 'Жаренное мясо', icon: '🥓', count: 2 }, craftingXp: 7, requiredLevel: 3 },
+			{ ingredients: [{ id: 'plant', count: 2 }], result: { id: 'flour', name: 'Мука', icon: '🍚', count: 3 }, craftingXp: 6, requiredLevel: 3 },
+			{ ingredients: [{ id: 'flour', count: 2 }, { id: 'milk', count: 1 }], result: { id: 'dough', name: 'Тесто', icon: '🍿', count: 1 }, craftingXp: 8, requiredLevel: 3 },
+			{ ingredients: [{ id: 'flour', count: 2 }, { id: 'plant', count: 1 }], result: { id: 'dough', name: 'Тесто', icon: '🍿', count: 1 }, craftingXp: 8, requiredLevel: 3 },
         ];
         let inventory = [];
-        let craftingGrid = [null, null, null, null];
+        let craftingGrid = [null, null, null, null, null];
         let miningAreas = [
             { id: 'forest', name: 'Лес', icon: '🌲', description: 'Добывайте дерево и шерсть. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'axe', count: 1 }, { id: 'wood', count: 5 }], yields: [{ id: 'wood', chance: 80, min: 1, max: 3 }, { id: 'wool', chance: 20, min: 1, max: 1 }] },
             { id: 'mountain', name: 'Горы', icon: '⛰️', description: 'Добывайте камень и железо. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'pickaxe', count: 1 }, { id: 'stone', count: 5 }], yields: [{ id: 'stone', chance: 75, min: 1, max: 3 }, { id: 'iron', chance: 25, min: 1, max: 1 }] },
-            { id: 'cave', name: 'Пещера', icon: '🕳️', description: 'Добывайте железо, золото и алмазы. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'pickaxe', count: 1 }, { id: 'iron', count: 5 }], yields: [{ id: 'iron', chance: 70, min: 1, max: 2 }, { id: 'gold', chance: 20, min: 1, max: 1 }, { id: 'diamond', chance: 10, min: 1, max: 1 }] },
-            { id: 'plains', name: 'Равнины', icon: '🌄', description: 'Добывайте шерсть, кожу и нитки. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'shovel', count: 1 }, { id: 'wool', count: 5 }], yields: [{ id: 'wool', chance: 60, min: 1, max: 2 }, { id: 'leather', chance: 30, min: 1, max: 2 }, { id: 'string', chance: 10, min: 1, max: 3 }] }
-        ];
+            { id: 'cave', name: 'Пещера', icon: '🕳️', description: 'Добывайте уголь, золото и алмазы. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'pickaxe', count: 1 }, { id: 'iron', count: 5 }], yields: [{ id: 'coal', chance: 70, min: 1, max: 2 }, { id: 'gold', chance: 20, min: 1, max: 1 }, { id: 'diamond', chance: 10, min: 1, max: 1 }] },
+            { id: 'plains', name: 'Равнины', icon: '🌄', description: 'Добывайте шерсть, кожу и нитки. Уровень 1', level: 1, cooldown: 0, progress: 0, levelR: 1, cost: [{ id: 'shovel', count: 1 }, { id: 'wool', count: 5 }], yields: [{ id: 'wool', chance: 60, min: 1, max: 2 }, { id: 'leather', chance: 30, min: 1, max: 2 }, { id: 'string', chance: 10, min: 1, max: 3 }] },
+			{ id: 'natural', name: 'Природа', icon: '⛺', description: 'Добывайте растения, животных и кожу. Уровень 3', level: 1, cooldown: 0, progress: 0, levelR: 3, cost: [{ id: 'food_animal', count: 5 }], yields: [{ id: 'plant', chance: 60, min: 1, max: 3 }, { id: 'animal', chance: 30, min: 1, max: 2 }, { id: 'leather', chance: 20, min: 1, max: 2 }] },
+			{ id: 'city', name: 'Древний город', icon: '🌇', description: 'Добывайте камень, технологии и растения. Уровень 4', level: 1, cooldown: 0, progress: 0, levelR: 4, cost: [{ id: 'scaner', count: 1 }, { id: 'stone', count: 7 }], yields: [{ id: 'stone', chance: 60, min: 1, max: 3 }, { id: 'tech', chance: 40, min: 1, max: 2 }, { id: 'plant', chance: 10, min: 1, max: 2 }] },
+			{ id: 'desert', name: 'Пустыня', icon: '🏜', description: 'Добывайте нефть и песок. Уровень 5', level: 1, cooldown: 0, progress: 0, levelR: 5, cost: [{ id: 'oil_pump', count: 1 }, { id: 'sand', count: 5 }], yields: [{ id: 'sand', chance: 60, min: 1, max: 3 }, { id: 'oil', chance: 30, min: 1, max: 2 }] },
+		];
         let player = { level: 1, xp: 0, maxXp: 100, bonuses: { miningSpeed: 0, resourceYield: 0, craftingEfficiency: 0, xpGain: 0 } };
         let achievements = [
+		    //Ресурсы
             { id: 'wood_gatherer', name: 'Собиратель дерева', icon: '🌳', description: 'Соберите 50 дерева', requirement: { resource: 'wood', count: 50 }, progress: 0, unlocked: false },
             { id: 'stone_miner', name: 'Добытчик камня', icon: '🧱', description: 'Соберите 50 камня', requirement: { resource: 'stone', count: 50 }, progress: 0, unlocked: false },
             { id: 'iron_prospector', name: 'Искатель железа', icon: '⚙️', description: 'Соберите 30 железа', requirement: { resource: 'iron', count: 30 }, progress: 0, unlocked: false },
             { id: 'gold_digger', name: 'Золотой копатель', icon: '🔶', description: 'Соберите 20 золота', requirement: { resource: 'gold', count: 20 }, progress: 0, unlocked: false },
             { id: 'diamond_hunter', name: 'Охотник за алмазами', icon: '💎', description: 'Соберите 10 алмазов', requirement: { resource: 'diamond', count: 10 }, progress: 0, unlocked: false },
+			
+			//Инструменты
             { id: 'axe_crafter', name: 'Мастер топоров', icon: '🪓', description: 'Создайте 5 топоров', requirement: { item: 'axe', count: 5 }, progress: 0, unlocked: false },
             { id: 'pickaxe_crafter', name: 'Кирочный мастер', icon: '⛏️', description: 'Создайте 5 кирок', requirement: { item: 'pickaxe', count: 5 }, progress: 0, unlocked: false },
             { id: 'sword_crafter', name: 'Кузнец мечей', icon: '🗡️', description: 'Создайте 3 меча', requirement: { item: 'sword', count: 3 }, progress: 0, unlocked: false },
             { id: 'diamond_sword_crafter', name: 'Алмазный кузнец', icon: '⚔️', description: 'Создайте 1 алмазный меч', requirement: { item: 'diamond_sword', count: 1 }, progress: 0, unlocked: false },
             { id: 'armor_crafter', name: 'Бронник', icon: '🦺', description: 'Создайте 3 кожаных брони', requirement: { item: 'armor', count: 3 }, progress: 0, unlocked: false },
+			
+			//Улучшения
             { id: 'forest_upgrader', name: 'Лесной магнат', icon: '🌲', description: 'Улучшите лес до 3 уровня', requirement: { area: 'forest', level: 3 }, progress: 0, unlocked: false },
             { id: 'mountain_upgrader', name: 'Горный барон', icon: '⛰️', description: 'Улучшите горы до 3 уровня', requirement: { area: 'mountain', level: 3 }, progress: 0, unlocked: false },
             { id: 'cave_upgrader', name: 'Пещерный лорд', icon: '🕳️', description: 'Улучшите пещеру до 3 уровня', requirement: { area: 'cave', level: 3 }, progress: 0, unlocked: false },
             { id: 'plains_upgrader', name: 'Равнинный владыка', icon: '🌄', description: 'Улучшите равнины до 3 уровня', requirement: { area: 'plains', level: 3 }, progress: 0, unlocked: false },
+			
+			//Крафт
             { id: 'novice_crafter', name: 'Новичок-крафтер', icon: '🔨', description: 'Создайте 10 любых предметов', requirement: { craftCount: 10 }, progress: 0, unlocked: false },
             { id: 'expert_crafter', name: 'Эксперт-крафтер', icon: '🔧', description: 'Создайте 50 любых предметов', requirement: { craftCount: 50 }, progress: 0, unlocked: false },
             { id: 'level_5', name: 'Поднимающийся мастер', icon: '🌟', description: 'Достигните 5 уровня', requirement: { level: 5 }, progress: 0, unlocked: false },
@@ -629,7 +660,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
             const ex = inventory.find(x => x.id === result.id);
             ex ? ex.count += result.count : inventory.push(result);
 
-            craftingGrid = [null, null, null, null];
+            craftingGrid = [null, null, null, null, null];
             renderInventory();
             renderCraftingGrid();
             addPlayerXp(craftingXp);
@@ -643,7 +674,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
                 if(res) res.count += it.count; 
                 else inventory.push({...it}); 
             }); 
-            craftingGrid = [null,null,null,null]; 
+            craftingGrid = [null,null,null,null,null]; 
             renderResources(); 
             renderInventory(); 
             renderCraftingGrid(); 
