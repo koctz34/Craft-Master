@@ -255,6 +255,21 @@
         }
     }
 })();
+setTimeout(() => {
+  notify("Уведомления загружены и готовы к работе!", "success");
+  setTimeout(() => {
+notify("САЙТ ОБНОВЛЯЕТСЯ. СЛЕДИТЕ ЗА ОБНОВЛЕНИЯМИ.", "notify");
+  setTimeout(() => {
+notify("ДЕЛЬТА НЕ СПИТ.", "notify");
+  setTimeout(() => {
+notify("ТЕХНОЛОГИИ ПРОЦВЕТАЮТ.", "notify");
+  setTimeout(() => {
+notify("СЛАВА ПРОГРЕССУ.", "notify");
+}, 3000);
+}, 3000);
+}, 3000);
+}, 3000);
+}, 500);
 </script>
 </head>
 <body>
@@ -273,7 +288,16 @@
 		<div class="achievements-menu">
 			<button class="achievements-button" id="achievements-button">Достижения</button>
         </div>
-    </div>
+		<div>
+			<h2>Сохранение</h2>
+			<div class="save-buttons">
+				<button id="export-button">Экспорт (.cfmdat)</button>
+				<button id="import-button">Импорт (.cfmdat)</button>
+			</div>
+			<input type="file" id="import-file" accept=".cfmdat">
+		</div>    
+	</div>
+	</div>
     <div class="achievements-modal" id="achievements-modal">
         <div class="achievements-modal-content">
             <button class="achievements-modal-close" id="achievements-modal-close">
@@ -283,10 +307,6 @@
             <div class="achievements-grid" id="achievements"></div>
         </div>
     </div>
-    <h1>САЙТ ОБНОВЛЯЕТЬСЯ. СЛЕДИТЕ ЗА ОБНОВЛЕНИЯМИ.</h1>
-    <h2>ДЕЛЬТА НЕ СПИТ.</h2>
-    <h2>ТЕХНОЛОГИИ ПРОЦВЕТАЮТ.</h2>
-    <h2>СЛАВА ПРОГРЕССУ.</h2>
     <h1>Крафт-мастер</h1>
     <div class="player-stats">
         <div class="player-stats-header">
@@ -296,14 +316,6 @@
         <div id="player-bonuses"></div>
     </div>
     <p class="status-message" id="status-message"></p>
-    <div class="save-container">
-        <h2>Сохранение</h2>
-        <div class="save-buttons">
-            <button id="export-button">Экспорт (.cfmdat)</button>
-            <button id="import-button">Импорт (.cfmdat)</button>
-        </div>
-        <input type="file" id="import-file" accept=".cfmdat">
-    </div>
     <div class="resource-mining">
         <h2 class="mining-title">Добыча ресурсов</h2>
         <div class="mining-areas" id="mining-areas"></div>
