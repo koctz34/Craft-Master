@@ -26,6 +26,7 @@
             --achievement-locked-bg: #edf2f7;
             --modal-bg: rgba(0,0,0,0.5);
             --modal-content-bg: #ffffff;
+            --error-color: #dc2626;
         }
         .dark-theme {
             --bg-color: #1a202c;
@@ -48,6 +49,7 @@
             --achievement-locked-bg: #4a5568;
             --modal-bg: rgba(0,0,0,0.7);
             --modal-content-bg: #2d3748;
+            --error-color: #ef4444;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         body { background: var(--bg-color); color: var(--text-color); padding: 20px; max-width: 1000px; margin: 0 auto; transition: background 0.3s, color 0.3s; }
@@ -104,156 +106,199 @@
         .achievements-modal-close svg { width: 20px; height: 20px; fill: var(--text-color); }
         .achievements-modal h2 { margin-bottom: 20px; }
         .achievements-button { margin: 15px auto; display: block; }
+        .achievement-detail-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 3000; justify-content: center; align-items: center; }
+        .achievement-detail-modal.open { display: flex; }
+        .achievement-detail-modal-content { background: var(--modal-content-bg); border-radius: 12px; padding: 20px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; }
+        .achievement-detail-modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; }
+        .achievement-detail-modal-close svg { width: 20px; height: 20px; fill: var(--text-color); }
+        .achievement-detail-icon { font-size: 48px; margin-bottom: 15px; }
+        .achievement-detail-name { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+        .achievement-detail-description { font-size: 14px; margin-bottom: 15px; }
+        .achievement-detail-progress { font-size: 14px; font-weight: 500; }
     </style>
 <script>
 (() => {
     let initialized = false;
     let container;
+    const activeNotifications = new Set();
 
-    function initializeNotifications() {
-        if (initialized) return;
-        initialized = true;
+    const icons = {
+        success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️',
+        loading: '⏳', important: '❗', neutral: '🔔', achievement: '🏆'
+    };
 
-        container = document.createElement('div');
-        container.id = 'notifications-container';
-        document.body.appendChild(container);
+    const lightColors = {
+        success: ['#e6ffed', '#22543d'],
+        error: ['#ffe6e6', '#742a2a'],
+        info: ['#ebf8ff', '#2b6cb0'],
+        warn: ['#fffaf0', '#975a16'],
+        loading: ['#f0f0f0', '#555'],
+        important: ['#fff5f5', '#c53030'],
+        neutral: ['#f7fafc', '#2d3748'],
+        achievement: ['#fffbe6', '#8d6e00']
+    };
 
+    const darkColors = {
+        success: ['#22543d', '#e6ffed'],
+        error: ['#742a2a', '#ffe6e6'],
+        info: ['#2b6cb0', '#ebf8ff'],
+        warn: ['#975a16', '#fffaf0'],
+        loading: ['#555', '#f0f0f0'],
+        important: ['#c53030', '#fff5f5'],
+        neutral: ['#2d3748', '#f7fafc'],
+        achievement: ['#8d6e00', '#fffbe6']
+    };
+
+    function injectStyles() {
         const style = document.createElement('style');
         style.textContent = `
-        #notifications-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            z-index: 9999;
-            max-width: 90%;
-            pointer-events: none;
-        }
-        .notification {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #fff;
-            color: #333;
-            padding: 14px 20px;
-            border-radius: 12px;
-            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-            font-family: system-ui, sans-serif;
-            font-size: 15px;
-            min-width: 280px;
-            max-width: 360px;
-            overflow: hidden;
-            position: relative;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.4s ease;
-            pointer-events: all;
-            cursor: default;
-        }
-        .notification.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .notification:hover {
-            transform: scale(1.03);
-        }
-        .notification-icon {
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-        .notification-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 4px;
-            background: rgba(0, 0, 0, 0.2);
-            animation: progressBar linear forwards;
-        }
-        @keyframes progressBar {
-            from { width: 100%; }
-            to { width: 0%; }
-        }
+            #notifications-container {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                z-index: 9999;
+                max-width: 90%;
+                pointer-events: none;
+            }
+            .notification {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                background: var(--notif-bg, #fff);
+                color: var(--notif-color, #333);
+                padding: 14px 20px;
+                border-radius: 12px;
+                box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+                font-family: system-ui, sans-serif;
+                font-size: 15px;
+                min-width: 280px;
+                max-width: 360px;
+                overflow: hidden;
+                position: relative;
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.4s ease, transform 0.4s ease;
+                pointer-events: all;
+                cursor: default;
+            }
+            .notification.show {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .notification.hide {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            .notification:hover {
+                transform: scale(1.03);
+            }
+            .notification-icon {
+                font-size: 20px;
+                flex-shrink: 0;
+            }
+            .notification-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 4px;
+                background: rgba(0,0,0,0.2);
+                animation: progressBar linear forwards;
+            }
+            @keyframes progressBar {
+                from { width: 100%; }
+                to { width: 0%; }
+            }
         `;
         document.head.appendChild(style);
     }
 
-    const icons = {
-        success: '✅',
-        error: '❌',
-        info: 'ℹ️',
-        warn: '⚠️',
-        loading: '⏳',
-        important: '❗',
-        neutral: '🔔',
-        achievement: '🏆'
-    };
+    function initialize() {
+        if (initialized) return;
+        initialized = true;
+        container = Object.assign(document.createElement('div'), { id: 'notifications-container' });
+        document.body.appendChild(container);
+        injectStyles();
+        observeThemeChanges();
+    }
 
-    const defaultColors = {
-        success: { bg: '#e6ffed', color: '#22543d' },
-        error: { bg: '#ffe6e6', color: '#742a2a' },
-        info: { bg: '#ebf8ff', color: '#2b6cb0' },
-        warn: { bg: '#fffaf0', color: '#975a16' },
-        loading: { bg: '#f0f0f0', color: '#555' },
-        important: { bg: '#fff5f5', color: '#c53030' },
-        neutral: { bg: '#f7fafc', color: '#2d3748' },
-        achievement: { bg: '#fffbe6', color: '#8d6e00' }
-    };
+    function getCurrentTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
 
-    window.notify = function (message, type = 'info', options = {}) {
-        initializeNotifications();
-
+    function createNotification(message, type = 'info', options = {}) {
         const notif = document.createElement('div');
         notif.className = 'notification';
-        
-        const icon = document.createElement('div');
-        icon.className = 'notification-icon';
-        icon.textContent = icons[type] || '🔔';
-        notif.appendChild(icon);
+        notif.dataset.type = type;
+        notif.dataset.manualTheme = options.theme || '';
 
-        const text = document.createElement('div');
-        text.textContent = message;
-        notif.appendChild(text);
+        const icon = Object.assign(document.createElement('div'), {
+            className: 'notification-icon',
+            textContent: icons[type] || icons.neutral
+        });
 
-        const colors = defaultColors[type] || defaultColors['neutral'];
-        notif.style.background = options.background || colors.bg;
-        notif.style.color = options.color || colors.color;
+        const text = Object.assign(document.createElement('div'), { textContent: message });
+
+        notif.append(icon, text);
 
         if (options.link) {
             notif.style.cursor = 'pointer';
-            notif.addEventListener('click', () => {
-                window.open(options.link, '_blank');
-            });
+            notif.addEventListener('click', () => window.open(options.link, '_blank'));
         } else {
-            notif.addEventListener('click', () => {
-                closeNotification();
-            });
+            notif.addEventListener('click', () => dismissNotification(notif));
         }
-
-        const duration = options.duration || 5000;
 
         const progress = document.createElement('div');
         progress.className = 'notification-progress';
-        progress.style.animationDuration = duration + 'ms';
+        progress.style.animationDuration = `${options.duration || 5000}ms`;
         notif.appendChild(progress);
 
         container.appendChild(notif);
 
-        setTimeout(() => notif.classList.add('show'), 10);
+        activeNotifications.add(notif);
+        updateNotificationTheme(notif);
 
-        const timer = setTimeout(() => {
-            closeNotification();
-        }, duration);
+        requestAnimationFrame(() => notif.classList.add('show'));
 
-        function closeNotification() {
-            notif.classList.remove('show');
-            notif.style.opacity = '0';
-            notif.style.transform = 'translateY(20px)';
-            setTimeout(() => notif.remove(), 300);
-            clearTimeout(timer);
-        }
+        const autoDismiss = setTimeout(() => dismissNotification(notif), options.duration || 5000);
+        notif.dismiss = () => {
+            clearTimeout(autoDismiss);
+            dismissNotification(notif);
+        };
     }
+
+    function dismissNotification(notif) {
+        notif.classList.remove('show');
+        notif.classList.add('hide');
+        setTimeout(() => {
+            notif.remove();
+            activeNotifications.delete(notif);
+        }, 300);
+    }
+
+    function updateNotificationTheme(notif) {
+        const theme = notif.dataset.manualTheme || getCurrentTheme();
+        const type = notif.dataset.type || 'neutral';
+        const colorSet = theme === 'dark' ? darkColors : lightColors;
+        const [bg, color] = colorSet[type] || colorSet.neutral;
+
+        notif.style.setProperty('--notif-bg', bg);
+        notif.style.setProperty('--notif-color', color);
+    }
+
+    function observeThemeChanges() {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', () => {
+            activeNotifications.forEach(updateNotificationTheme);
+        });
+    }
+
+    window.notify = (message, type = 'info', options = {}) => {
+        initialize();
+        createNotification(message, type, options);
+    };
 })();
 setTimeout(() => {
   notify("Уведомления загружены и готовы к работе!", "success");
@@ -287,7 +332,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
         </div>
 		<div class="achievements-menu">
 			<button class="achievements-button" id="achievements-button">Достижения</button>
-        </div>
+        </div> // я щас весь код вставлю пока что ничего не меняй
 		<div>
 			<h2>Сохранение</h2>
 			<div class="save-buttons">
@@ -336,7 +381,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
                 <div class="crafting-slot" data-slot="1"></div>
                 <div class="crafting-slot" data-slot="2"></div>
                 <div class="crafting-slot" data-slot="3"></div>
-		<div class="crafting-slot" data-slot="4"></div>
+				<div class="crafting-slot" data-slot="4"></div>
             </div>
             <div style="display:flex; justify-content:center; gap:15px; margin:20px 0;">
                 <button id="craft-button">Создать</button>
@@ -358,7 +403,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
                     <li>2 Шерсти + 1 Нить = 1 Рюкзак</li>
                     <li>2 Кожи + 1 Нить = 1 Кожаная броня</li>
                     <li> |</li>
-                    <li>Остальные рецепты ищите сами</li>
+                    <li>Остальные рецепты ищите Вы</li>
                 </ul>
             </div>
         </div>
@@ -375,7 +420,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
 			{ id: 'sand', name: 'Песок', icon: '🟨', count: 0 },
 			{ id: 'wool', name: 'Шерсть', icon: '🧶', count: 5 },
             { id: 'leather', name: 'Кожа', icon: '🧴', count: 0 },
-            { id: 'string', name: 'Нить', icon: '🧵', count: 0 },
+            { id: 'string', name: 'Нить', icon: '🧵', count: 0 }, 
             { id: 'oil', name: 'Нефть', icon: '🛢', count: 0 },
 			{ id: 'tech', name: 'Технологии', icon: '💾', count: 0 },
             { id: 'plant', name: 'Растение', icon: '🌱', count: 0 },
@@ -406,16 +451,23 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
             { ingredients: [{ id: 'wool', count: 2 }, { id: 'string', count: 1 }], result: { id: 'backpack', name: 'Рюкзак', icon: '🎒', count: 1 }, craftingXp: 8, requiredLevel: 2 },
 			
 			//Ресурсы
+            { ingredients: [{ id: 'plant', count: 2 }], result: { id: 'water', name: 'Вода', icon: '💧', count: 1 }, craftingXp: 1, requiredLevel: 3 },
             { ingredients: [{ id: 'iron', count: 2 }, { id: 'gold', count: 1 }], result: { id: 'steel', name: 'Золотая сталь', icon: '🔩', count: 1 }, craftingXp: 1, requiredLevel: 3 },
 			{ ingredients: [{ id: 'animal', count: 1 }, { id: 'knife', count: 1 }], result: { id: 'meat', name: 'Мясо', icon: '🥩', count: 2 }, craftingXp: 4, requiredLevel: 3 },
 			{ ingredients: [{ id: 'animal', count: 1 }, { id: 'plant', count: 1 }], result: { id: 'milk', name: 'Молоко', icon: '🥛', count: 2 }, craftingXp: 2, requiredLevel: 3 },
+            { ingredients: [{ id: 'sand', count: 3 }, { id: 'coal', count: 1 }], result: { id: 'glass', name: 'Стекло', icon: '🧊', count: 2 }, craftingXp: 4, requiredLevel: 5 },
 			
 			//Кулинария
 			{ ingredients: [{ id: 'meat', count: 2 }, { id: 'coal', count: 1 }], result: { id: 'cook_meat', name: 'Жаренное мясо', icon: '🥓', count: 2 }, craftingXp: 7, requiredLevel: 3 },
 			{ ingredients: [{ id: 'plant', count: 2 }], result: { id: 'flour', name: 'Мука', icon: '🍚', count: 3 }, craftingXp: 6, requiredLevel: 3 },
-			{ ingredients: [{ id: 'flour', count: 2 }, { id: 'milk', count: 1 }], result: { id: 'dough', name: 'Тесто', icon: '🍿', count: 1 }, craftingXp: 8, requiredLevel: 3 },
-			{ ingredients: [{ id: 'flour', count: 2 }, { id: 'plant', count: 1 }], result: { id: 'dough', name: 'Тесто', icon: '🍿', count: 1 }, craftingXp: 8, requiredLevel: 3 },
-        ];
+			{ ingredients: [{ id: 'flour', count: 2 }, { id: 'milk', count: 1 }, { id: 'water', count: 1 }], result: { id: 'dough', name: 'Тесто', icon: '🍿', count: 1 }, craftingXp: 8, requiredLevel: 3 },
+			{ ingredients: [{ id: 'dough', count: 1 }, { id: 'coal', count: 1 }], result: { id: 'bread', name: 'Хлеб', icon: '🍞', count: 1 }, craftingXp: 10, requiredLevel: 3 },
+            { ingredients: [{ id: 'dough', count: 1 }, { id: 'coal', count: 1 }, { id: 'meat', count: 1 }], result: { id: 'dumpling', name: 'Пельмень', icon: '🥟', count: 4 }, craftingXp: 13, requiredLevel: 3 },
+            { ingredients: [{ id: 'milk', count: 2 }], result: { id: 'cheese', name: 'Сыр', icon: '🧀', count: 1 }, craftingXp: 6, requiredLevel: 3 },
+            { ingredients: [{ id: 'bread', count: 1 }, { id: 'cook_meat', count: 1 }, { id: 'plant', count: 1 }, { id: 'cheese', count: 1 }], result: { id: 'burger', name: 'Бургер', icon: '🍔', count: 1 }, craftingXp: 25, requiredLevel: 3 },
+            { ingredients: [{ id: 'dough', count: 1 }, { id: 'cook_meat', count: 1 }, { id: 'plant', count: 1 }, { id: 'cheese', count: 2 }], result: { id: 'pizza', name: 'Пицца', icon: '🍕', count: 1 }, craftingXp: 35, requiredLevel: 3 },
+            { ingredients: [{ id: 'water', count: 2 }, { id: 'cook_meat', count: 1 }, { id: 'plant', count: 2 }], result: { id: 'soup', name: 'Суп', icon: '🥣', count: 1 }, craftingXp: 21, requiredLevel: 3 },
+        ]; 
         let inventory = [];
         let craftingGrid = [null, null, null, null, null];
         let miningAreas = [
@@ -552,7 +604,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
                 a.progress = progress;
                 if (progress >= (a.requirement.count || a.requirement.level || a.requirement.craftCount || a.requirement.totalResources || a.requirement.achievementsUnlocked)) {
                     a.unlocked = true;
-                    notify(`Достижение разблокировано: ${a.name}!`, 'achievement', { duration: 8000 });
+                    notify(`Достижение разблокировано: ${a.name}!`, 'achievement');
                 }
             });
             renderAchievements();
@@ -605,9 +657,9 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
             checkAchievements();
         }
         function selectResource(r) { 
-            if(r.count<=0){notify('Нет ресурса', 'error', { duration: 8000 });return;} 
+            if(r.count<=0){notify('Нет ресурса', 'error', { duration: 3000 });return;} 
             const idx = craftingGrid.indexOf(null); 
-            if(idx<0){notify('Нет слотов', 'error', { duration: 8000 });return;} 
+            if(idx<0){notify('Нет слотов', 'error', { duration: 3000 });return;} 
             craftingGrid[idx] = {...r, count:1}; 
             r.count--; 
             renderResources(); 
@@ -618,7 +670,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
             const it = inventory[i]; 
             if(it.count<=0)return; 
             const idx = craftingGrid.indexOf(null); 
-            if(idx<0){notify('Нет слотов', 'error', { duration: 8000 });return;} 
+            if(idx<0){notify('Нет слотов', 'error', { duration: 3000 });return;} 
             craftingGrid[idx] = {...it, count:1}; 
             it.count--; 
             if(it.count===0) inventory.splice(i,1); 
@@ -649,12 +701,12 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
             }
 
             if (!result) {
-                notify('Неверный рецепт', 'error', { duration: 8000 });
+                notify('Неверный рецепт', 'error', { duration: 3000 });
                 return;
             }
 
             if (player.level < requiredLevel) {
-                notify(`Требуется уровень ${requiredLevel} для крафта!`, 'error', { duration: 8000 });
+                notify(`Требуется уровень ${requiredLevel} для крафта!`, 'error', { duration: 3000 });
                 return;
             }
 
@@ -683,7 +735,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
         };
         function mineResource(a) {
             if (player.level < a.levelR) {
-                notify(`Требуется уровень ${a.levelR} для добычи!`, 'error', { duration: 8000 });
+                notify(`Требуется уровень ${a.levelR} для добычи!`, 'error', { duration: 3000 });
                 return;
             }
 
@@ -738,7 +790,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
             });
 
             if (!canUpgrade) {
-                notify('Недостаточно для прокачки', 'error', { duration: 8000 });
+                notify('Недостаточно для прокачки', 'error', { duration: 3000 });
                 return;
             }
 
@@ -768,7 +820,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
                 });
                 return btoa(encodedString);
             } catch (e) {
-                notify('Ошибка шифрования данных', 'error', { duration: 8000 });
+                notify('Ошибка шифрования данных', 'error', { duration: 3000 });
                 console.error(e);
                 return null;
             }
@@ -782,7 +834,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
                 const jsonString = decodeURIComponent(uriEncodedString);
                 return JSON.parse(jsonString);
             } catch (e) {
-                notify('Ошибка расшифровки данных', 'error', { duration: 8000 });
+                notify('Ошибка расшифровки данных', 'error', { duration: 3000 });
                 console.error(e);
                 return null;
             }
@@ -830,15 +882,15 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
         document.getElementById('import-file').addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (!file) {
-                notify('Файл не выбран', 'error', { duration: 8000 });
+                notify('Файл не выбран', 'error', { duration: 3000 });
                 return;
             }
             if (!file.name.endsWith('.cfmdat')) {
-                notify('Неверный тип файла', 'error', { duration: 8000 });
+                notify('Неверный тип файла', 'error', { duration: 3000 });
                 return;
             }
             if (file.size > 5 * 1024 * 1024) {
-                notify('Файл слишком большой', 'error', { duration: 8000 });
+                notify('Файл слишком большой', 'error', { duration: 3000 });
                 return;
             }
 
@@ -862,15 +914,15 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
                         toggleAchievementsModal(settings.achievementsModalOpen);
                         notify('Сохранение успешно импортировано', 'success');
                     } else {
-                        notify('Неверный формат сохранения', 'error', { duration: 8000 });
+                        notify('Неверный формат сохранения', 'error', { duration: 3000 });
                     }
                 } catch (error) {
                     console.error(error);
-                    notify('Ошибка при загрузке файла', 'error', { duration: 8000 });
+                    notify('Ошибка при загрузке файла', 'error', { duration: 3000 });
                 }
             };
             reader.onerror = () => {
-                notify('Ошибка чтения файла', 'error', { duration: 8000 });
+                notify('Ошибка чтения файла', 'error', { duration: 3000 });
             };
             reader.readAsText(file);
         });
@@ -914,6 +966,7 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
         document.getElementById('achievements-button').onclick = () => toggleAchievementsModal();
         document.getElementById('achievements-modal-close').onclick = () => toggleAchievementsModal(false);
 
+
         loadTheme();
         loadAchievementsModalState();
         renderPlayerStats();
@@ -922,7 +975,138 @@ notify("СЛАВА ПРОГРЕССУ.", "notify");
         renderCraftingGrid();
         renderMiningAreas();
         renderAchievements();
-    });
-    </script>
+        const ENCRYPTED_PASSWORD = 'ZGVsdGEyMDI1';
+
+function cheat(password) {
+    // Проверка наличия пароля
+    if (!password) {
+        notify('Требуется пароль!', 'error', { duration: 3000 });
+        return;
+    }
+
+    try {
+        // Расшифровка пароля
+        const decodedPassword = atob(ENCRYPTED_PASSWORD);
+        if (password !== decodedPassword) {
+            notify('Неверный пароль!', 'error', { duration: 3000 });
+            return;
+        }
+
+        // Установка максимального количества ресурсов
+        resources.forEach(resource => {
+            resource.count = 9999;
+        });
+
+        // Установка максимального уровня игрока
+        player.level = 100;
+        player.xp = 0;
+        player.maxXp = 1000000;
+
+        // Улучшение всех зон добычи до уровня 10
+        miningAreas.forEach(area => {
+            area.level = 10;
+            area.levelR = 1; // Минимальный уровень для доступа
+        });
+
+        // Добавление всех предметов из рецептов в инвентарь
+        recipes.forEach(recipe => {
+            const existing = inventory.find(i => i.id === recipe.result.id);
+            if (existing) {
+                existing.count = 9999;
+            } else {
+                inventory.push({ ...recipe.result, count: 9999 });
+            }
+        });
+
+        // Разблокировка всех достижений
+        achievements.forEach(achievement => {
+            // Обновление прогресса для достижений
+            if (achievement.requirement.resource) {
+                const res = resources.find(r => r.id === achievement.requirement.resource);
+                if (res) {
+                    res.count = Math.max(res.count, achievement.requirement.count);
+                }
+            } else if (achievement.requirement.item) {
+                const existingItem = inventory.find(i => i.id === achievement.requirement.item);
+                const recipe = recipes.find(r => r.result.id === achievement.requirement.item);
+                if (existingItem) {
+                    existingItem.count = Math.max(existingItem.count, achievement.requirement.count);
+                } else if (recipe) {
+                    inventory.push({
+                        id: recipe.result.id,
+                        name: recipe.result.name,
+                        icon: recipe.result.icon,
+                        count: achievement.requirement.count
+                    });
+                } else {
+                    inventory.push({
+                        id: achievement.requirement.item,
+                        name: achievement.requirement.item,
+                        icon: achievement.icon,
+                        count: achievement.requirement.count
+                    });
+                }
+            } else if (achievement.requirement.area) {
+                const area = miningAreas.find(m => m.id === achievement.requirement.area);
+                if (area) {
+                    area.level = Math.max(area.level, achievement.requirement.level);
+                }
+            } else if (achievement.requirement.level) {
+                player.level = Math.max(player.level, achievement.requirement.level);
+            } else if (achievement.requirement.craftCount) {
+                const totalCrafted = inventory.reduce((sum, i) => sum + i.count, 0);
+                if (totalCrafted < achievement.requirement.craftCount) {
+                    inventory.push({
+                        id: 'crafted_item',
+                        name: 'Крафтовый предмет',
+                        icon: '🔨',
+                        count: achievement.requirement.craftCount - totalCrafted
+                    });
+                }
+            } else if (achievement.requirement.totalResources) {
+                const totalResources = resources.reduce((sum, r) => sum + r.count, 0);
+                if (totalResources < achievement.requirement.totalResources) {
+                    resources[0].count += achievement.requirement.totalResources - totalResources;
+                }
+            } else if (achievement.requirement.achievementsUnlocked) {
+                achievement.progress = achievements.length;
+            }
+
+            // Установка прогресса и разблокировка
+            achievement.progress = achievement.requirement.count || 
+                                 achievement.requirement.level || 
+                                 achievement.requirement.craftCount || 
+                                 achievement.requirement.totalResources || 
+                                 achievement.requirement.achievementsUnlocked || 0;
+            achievement.unlocked = true;
+        });
+
+        // Обновление прогресса для достижения с количеством разблокированных достижений
+        achievements.forEach(a => {
+            if (a.requirement.achievementsUnlocked) {
+                a.progress = achievements.filter(ach => ach.unlocked).length;
+                a.unlocked = a.progress >= a.requirement.achievementsUnlocked;
+            }
+        });
+
+        // Обновление интерфейса
+        renderResources();
+        renderInventory();
+        renderMiningAreas();
+        renderPlayerStats();
+        renderAchievements();
+        checkAchievements();
+
+        notify('Все ресурсы, предметы, уровень и достижения установлены на максимум!', 'success', { duration: 10000 });
+    } catch (e) {
+        notify('Ошибка при выполнении команды!', 'error', { duration: 3000 });
+        console.error(e);
+    }
+}
+
+// Делаем функцию cheat доступной глобально
+window.cheat = cheat;
+    })
+</script>
 </body>
 </html>
