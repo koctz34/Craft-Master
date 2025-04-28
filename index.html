@@ -123,8 +123,20 @@
     const activeNotifications = new Set();
 
     const icons = {
-        success: '✅', error: '❌', info: 'ℹ️', warn: '⚠️',
-        loading: '⏳', important: '❗', neutral: '🔔', achievement: '🏆'
+        success: '✅', 
+        error: '❌', 
+        info: 'ℹ️', 
+        warn: '⚠️',
+        loading: '⏳', 
+        important: '❗', 
+        neutral: '🔔', 
+        achievement: '🏆',
+        answer: '✍️',
+        link: '🌐',
+        update: '🛠️',
+        message: '💬',
+        warning: '🚨',
+        promo: '🎁'
     };
 
     const lightColors = {
@@ -135,7 +147,13 @@
         loading: ['#f0f0f0', '#555'],
         important: ['#fff5f5', '#c53030'],
         neutral: ['#f7fafc', '#2d3748'],
-        achievement: ['#fffbe6', '#8d6e00']
+        achievement: ['#fffbe6', '#8d6e00'],
+        answer: ['#eef6ff', '#1a202c'],
+        link: ['#e0f7fa', '#006064'],
+        update: ['#f0fff4', '#276749'],
+        message: ['#edf2f7', '#2c5282'],
+        warning: ['#fff5f5', '#c53030'],
+        promo: ['#fff0f5', '#b83280']
     };
 
     const darkColors = {
@@ -146,7 +164,13 @@
         loading: ['#555', '#f0f0f0'],
         important: ['#c53030', '#fff5f5'],
         neutral: ['#2d3748', '#f7fafc'],
-        achievement: ['#8d6e00', '#fffbe6']
+        achievement: ['#8d6e00', '#fffbe6'],
+        answer: ['#1a202c', '#eef6ff'],
+        link: ['#006064', '#e0f7fa'],
+        update: ['#276749', '#f0fff4'],
+        message: ['#2c5282', '#edf2f7'],
+        warning: ['#c53030', '#fff5f5'],
+        promo: ['#b83280', '#fff0f5']
     };
 
     function injectStyles() {
@@ -211,6 +235,27 @@
                 from { width: 100%; }
                 to { width: 0%; }
             }
+            .notification-input {
+                margin-top: 8px;
+                width: 100%;
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+                font-size: 14px;
+            }
+            .notification-button {
+                margin-top: 8px;
+                background: #3182ce;
+                color: #fff;
+                padding: 8px 12px;
+                border: none;
+                border-radius: 6px;
+                font-size: 14px;
+                cursor: pointer;
+            }
+            .notification-button:hover {
+                background: #2b6cb0;
+            }
         `;
         document.head.appendChild(style);
     }
@@ -243,30 +288,47 @@
 
         notif.append(icon, text);
 
-        if (options.link) {
+        if (type === 'answer') {
+            const input = Object.assign(document.createElement('input'), {
+                className: 'notification-input',
+                placeholder: options.placeholder || 'Введите ответ...'
+            });
+            const button = Object.assign(document.createElement('button'), {
+                className: 'notification-button',
+                textContent: options.buttonText || 'Ответить'
+            });
+            button.addEventListener('click', () => {
+                if (typeof options.onAnswer === 'function') {
+                    options.onAnswer(input.value);
+                }
+                dismissNotification(notif);
+            });
+            notif.append(input, button);
+        } else if (options.link) {
             notif.style.cursor = 'pointer';
             notif.addEventListener('click', () => window.open(options.link, '_blank'));
         } else {
             notif.addEventListener('click', () => dismissNotification(notif));
         }
 
-        const progress = document.createElement('div');
-        progress.className = 'notification-progress';
-        progress.style.animationDuration = `${options.duration || 5000}ms`;
-        notif.appendChild(progress);
+        if (type !== 'answer') {
+            const progress = document.createElement('div');
+            progress.className = 'notification-progress';
+            progress.style.animationDuration = `${options.duration || 5000}ms`;
+            notif.appendChild(progress);
+
+            const autoDismiss = setTimeout(() => dismissNotification(notif), options.duration || 5000);
+            notif.dismiss = () => {
+                clearTimeout(autoDismiss);
+                dismissNotification(notif);
+            };
+        }
 
         container.appendChild(notif);
-
         activeNotifications.add(notif);
         updateNotificationTheme(notif);
 
         requestAnimationFrame(() => notif.classList.add('show'));
-
-        const autoDismiss = setTimeout(() => dismissNotification(notif), options.duration || 5000);
-        notif.dismiss = () => {
-            clearTimeout(autoDismiss);
-            dismissNotification(notif);
-        };
     }
 
     function dismissNotification(notif) {
