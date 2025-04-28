@@ -1,0 +1,110 @@
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #2d3748;
+            --container-bg: #ffffff;
+            --shadow-color: rgba(0,0,0,0.15);
+            --hover-bg: #e2e8f0;
+            --slot-bg: #edf2f7;
+            --crafting-slot-bg: #f7fafc;
+            --button-bg: #3182ce;
+            --button-hover-bg: #2b6cb0;
+            --upgrade-btn-bg: #38a169;
+            --xp-bar-bg: #f6e05e;
+            --progress-bar-bg: #3182ce;
+            --tooltip-bg: rgba(45,55,72,0.9);
+            --recipe-bg: #f7fafc;
+            --accent-color: #e53e3e;
+            --achievement-bg: #f7fafc;
+            --achievement-unlocked-bg: #e6ffed;
+            --achievement-locked-bg: #edf2f7;
+            --modal-bg: rgba(0,0,0,0.5);
+            --modal-content-bg: #ffffff;
+            --error-color: #dc2626;
+        }
+        .dark-theme {
+            --bg-color: #1a202c;
+            --text-color: #e2e8f0;
+            --container-bg: #2d3748;
+            --shadow-color: rgba(0,0,0,0.4);
+            --hover-bg: #4a5568;
+            --slot-bg: #4a5568;
+            --crafting-slot-bg: #718096;
+            --button-bg: #63b3ed;
+            --button-hover-bg: #4299e1;
+            --upgrade-btn-bg: #48bb78;
+            --xp-bar-bg: #ecc94b;
+            --progress-bar-bg: #63b3ed;
+            --tooltip-bg: rgba(26,32,44,0.95);
+            --recipe-bg: #2d3748;
+            --accent-color: #f56565;
+            --achievement-bg: #2d3748;
+            --achievement-unlocked-bg: #22543d;
+            --achievement-locked-bg: #4a5568;
+            --modal-bg: rgba(0,0,0,0.7);
+            --modal-content-bg: #2d3748;
+            --error-color: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: var(--bg-color); color: var(--text-color); padding: 20px; max-width: 1000px; margin: 0 auto; transition: background 0.3s, color 0.3s; }
+        h1, h2 { text-align: center; margin: 15px 0; color: var(--text-color); font-weight: 600; }
+        .player-stats { background: var(--container-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px var(--shadow-color); margin-bottom: 20px; }
+        .player-stats-header { display: flex; justify-content: space-between; align-items: center; }
+        .player-level-container { font-size: 20px; font-weight: 500; }
+        .xp-bar-container { flex: 1; height: 12px; background: var(--slot-bg); border-radius: 6px; overflow: hidden; margin-left: 15px; }
+        #xp-bar { height: 100%; width: 0; background: var(--xp-bar-bg); transition: width 0.5s ease; }
+        #player-bonuses { font-size: 14px; color: #38a169; margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+        .status-message { text-align: center; margin: 15px 0; font-weight: 600; color: var(--accent-color); min-height: 24px; }
+        .resource-mining, .resources-container, .inventory-container, .crafting-container, .save-container { background: var(--container-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px var(--shadow-color); margin-bottom: 20px; }
+        .mining-areas, .resources-grid, .inventory-grid, .crafting-grid, .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; margin-top: 15px; }
+        .mining-area, .resource-item, .inventory-item, .crafting-slot, .achievement-item { background: var(--slot-bg); border: 2px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.2s ease; position: relative; user-select: none; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
+        .mining-area { height: 280px; }
+        .crafting-slot { background: var(--crafting-slot-bg); height: 90px; }
+        .achievement-item { background: var(--achievement-bg); height: 120px; }
+        .achievement-item.unlocked { background: var(--achievement-unlocked-bg); }
+        .achievement-item.locked { background: var(--achievement-locked-bg); }
+        .mining-area:hover, .resource-item:hover, .inventory-item:hover, .crafting-slot:hover, .achievement-item:hover { background: var(--hover-bg); transform: translateY(-3px); box-shadow: 0 2px 8px var(--shadow-color); }
+        .level-badge { position: absolute; top: 8px; right: 8px; background: var(--button-bg); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 14px; pointer-events: none; }
+        .mining-icon, .icon, .achievement-icon { font-size: 32px; margin-bottom: 8px; pointer-events: none; }
+        .item-count, .achievement-progress { position: absolute; bottom: 5px; right: 5px; background: var(--tooltip-bg); color: #fff; border-radius: 12px; padding: 3px 8px; font-size: 12px; }
+        .item-name, .mining-name, .achievement-name { font-size: 15px; overflow: hidden; text-overflow: ellipsis; max-width: 100%; pointer-events: none; }
+        .mining-progress { height: 12px; width: 100%; background: var(--slot-bg); border-radius: 6px; margin-top: 8px; overflow: hidden; }
+        .mining-progress-bar { height: 100%; width: 0; background: var(--progress-bar-bg); transition: width 0.5s ease; }
+        .upgrade-btn { font-size: 13px; padding: 6px 12px; background: var(--upgrade-btn-bg); border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
+        .upgrade-btn:hover { background: #2f855a; }
+        .cooldown-text { font-size: 13px; color: var(--accent-color); margin-top: 8px; }
+        .tooltip-mining { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--tooltip-bg); color: #fff; padding: 6px 12px; border-radius: 6px; white-space: nowrap; opacity: 0; transition: opacity 0.2s ease; font-size: 13px; pointer-events: none; }
+        .mining-area:hover .tooltip-mining { opacity: 1; }
+        button { background: var(--button-bg); color: #fff; border: none; border-radius: 6px; padding: 10px 20px; cursor: pointer; transition: background 0.2s ease, transform 0.1s; font-weight: 500; }
+        button:hover { background: var(--button-hover-bg); transform: translateY(-2px); }
+        button:disabled { background: #a0aec0; cursor: not-allowed; }
+        .recipe-book { margin-top: 15px; padding: 15px; background: var(--recipe-bg); border-radius: 8px; border: 1px solid #e2e8f0; }
+        .recipe-list { list-style: none; padding-left: 20px; font-size: 14px; }
+        .save-buttons { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        input[type="file"] { display: none; }
+        .settings-button { position: fixed; top: 20px; left: 20px; background: var(--button-bg); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px var(--shadow-color); transition: all 0.2s ease; }
+        .settings-button:hover { background: var(--button-hover-bg); transform: scale(1.1); }
+        .settings-button svg { width: 24px; height: 24px; fill: #fff; }
+        .settings-panel { position: fixed; top: 0; right: -300px; width: 300px; height: 100%; background: var(--container-bg); box-shadow: -4px 0 12px var(--shadow-color); padding: 20px; transition: right 0.3s ease; z-index: 1000; }
+        .settings-panel.open { right: 0; }
+        .settings-panel h2 { font-size: 20px; margin-bottom: 20px; }
+        .settings-panel .close-button { position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; }
+        .settings-panel .close-button svg { width: 20px; height: 20px; fill: var(--text-color); }
+        .theme-toggle { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .theme-toggle label { font-size: 16px; font-weight: 500; }
+        .theme-toggle input { width: 20px; height: 20px; cursor: pointer; }
+        .achievements-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 2000; justify-content: center; align-items: center; }
+        .achievements-modal.open { display: flex; }
+        .achievements-modal-content { background: var(--modal-content-bg); border-radius: 12px; padding: 20px; width: 90%; max-width: 800px; max-height: 80%; overflow-y: auto; position: relative; box-shadow: 0 4px 12px var(--shadow-color); }
+        .achievements-modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; }
+        .achievements-modal-close svg { width: 20px; height: 20px; fill: var(--text-color); }
+        .achievements-modal h2 { margin-bottom: 20px; }
+        .achievements-button { margin: 15px auto; display: block; }
+        .achievement-detail-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-bg); z-index: 3000; justify-content: center; align-items: center; }
+        .achievement-detail-modal.open { display: flex; }
+        .achievement-detail-modal-content { background: var(--modal-content-bg); border-radius: 12px; padding: 20px; width: 90%; max-width: 400px; position: relative; box-shadow: 0 4px 12px var(--shadow-color); text-align: center; }
+        .achievement-detail-modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; }
+        .achievement-detail-modal-close svg { width: 20px; height: 20px; fill: var(--text-color); }
+        .achievement-detail-icon { font-size: 48px; margin-bottom: 15px; }
+        .achievement-detail-name { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+        .achievement-detail-description { font-size: 14px; margin-bottom: 15px; }
+        .achievement-detail-progress { font-size: 14px; font-weight: 500; }
