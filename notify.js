@@ -241,3 +241,18 @@
         initialize();
         createNotification(message, type, options);
     };
+setTimeout(() => {
+  notify("Уведомления загружены и готовы к работе!", "success");
+  setTimeout(() => {
+notify("САЙТ ОБНОВЛЯЕТСЯ. СЛЕДИТЕ ЗА ОБНОВЛЕНИЯМИ.", "notify");
+  setTimeout(() => {
+notify("ДЕЛЬТА НЕ СПИТ.", "notify");
+  setTimeout(() => {
+notify("ТЕХНОЛОГИИ ПРОЦВЕТАЮТ.", "notify");
+  setTimeout(() => {
+notify("СЛАВА ПРОГРЕССУ.", "notify");
+}, 3000);
+}, 3000);
+}, 3000);
+}, 3000);
+}, 500);
